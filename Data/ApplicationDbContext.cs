@@ -19,9 +19,8 @@ namespace TheBugTracker.Data
             modelBuilder.Entity<BTUser>().HasMany(x => x.Tickets);
             modelBuilder.Entity<Ticket>().HasOne(x => x.OwnerUser);
             modelBuilder.Entity<Ticket>().HasOne(x => x.DeveloperUser);
-            modelBuilder.Entity<IdentityUserLogin<string>>().HasNoKey();
-            modelBuilder.Entity<IdentityUserRole<string>>().HasNoKey();
-            modelBuilder.Entity<IdentityUserToken<string>>().HasNoKey();
+            
+            base.OnModelCreating(modelBuilder);
         }
 
         public DbSet<Company> Companies { get; set; }
