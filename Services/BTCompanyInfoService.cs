@@ -27,7 +27,10 @@ namespace TheBugTracker.Services
         {
             IQueryable<Project> query = _context.Projects
                 .Where(p => p.CompanyId == companyId)
+                .Include(p => p.Company)
+                .Include(p => p.ProjectPriority)
                 .Include(p => p.Members)
+                .Include(p => p.Tickets)
                 .Include(p => p.Tickets).ThenInclude(t => t.Comments)
                 .Include(p => p.Tickets).ThenInclude(t => t.Attachments)
                 .Include(p => p.Tickets).ThenInclude(t => t.History)
@@ -36,8 +39,7 @@ namespace TheBugTracker.Services
                 .Include(p => p.Tickets).ThenInclude(t => t.OwnerUser)
                 .Include(p => p.Tickets).ThenInclude(t => t.TicketStatus)
                 .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
-                .Include(p => p.Tickets).ThenInclude(t => t.TicketType)
-                .Include(p => p.ProjectPriority);
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketType);                
             return await query.ToListAsync();
         }
 

@@ -42,8 +42,8 @@ namespace TheBugTracker.Services
         public async Task<List<BTUser>> GetUsersInRoleAsync(string roleName, int companyId)
         {
             IList<BTUser> users = await _userManager.GetUsersInRoleAsync(roleName);
-            IEnumerable<BTUser> usersInCompany = users.Where(u => u.CompanyId == companyId);
-            return usersInCompany.ToList();
+            IEnumerable<BTUser> usersInRoleInCompany = users.Where(u => u.CompanyId == companyId);
+            return usersInRoleInCompany.ToList();
         }
 
         public async Task<List<BTUser>> GetUsersNotInRoleAsync(string roleName, int companyId)
