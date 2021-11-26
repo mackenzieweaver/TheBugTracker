@@ -14,6 +14,10 @@ namespace TheBugTracker.Data
         {
         }
 
+        public ApplicationDbContext()
+        {
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<BTUser>().HasMany(x => x.Tickets);

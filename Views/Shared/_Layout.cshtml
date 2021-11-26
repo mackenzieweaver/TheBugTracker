@@ -7,11 +7,35 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <style>
+        .customcontainer {
+            max-height: 100vh;
+            max-width: 100%;
+            overflow: auto;
+        }
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #88A7FC;
+            border-radius: 13px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7191FA;
+        }
+        ::-webkit-scrollbar-track {
+            background: #FFFFFF;
+            border: 4px solid #FFFFFF;
+            border-radius: 13px;
+            box-shadow: inset 3px 3px 21px 0px #A8B7F7;
+        }
+    </style>
 </head>
 
 <body class="row m-0">
 
-    <div class="col-12 col-sm-4 col-lg-3 col-xl-2 p-0">
+    <div class="col-12 col-sm-4 col-lg-3 col-xl-2 p-0 customcontainer">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-right box-shadow p-0">
 
             <button class="navbar-toggler m-3" type="button" data-toggle="collapse" data-target=".navbar-collapse"
@@ -20,7 +44,7 @@
             </button>
 
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1 flex-sm-column pl-3" style="height: 100vh">
+                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="height: 100vh">
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
@@ -82,7 +106,7 @@
         </nav>
     </div>
 
-    <div class="col" style="max-height: 100vh; overflow: auto;">
+    <div class="col p-3 customcontainer">
         <main role="main">
             @RenderBody()
         </main>

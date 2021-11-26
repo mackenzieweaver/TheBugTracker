@@ -5,20 +5,31 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IBTTicketHistoryService _historyService;
+        private readonly ApplicationDbContext _context;
+        private readonly IBTTicketService _ticketService;
+        private readonly IBTProjectService _projectService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IBTTicketHistoryService historyService, ApplicationDbContext context, IBTTicketService ticketService,
+        IBTProjectService projectService)
         {
             _logger = logger;
+            _historyService = historyService;
+            _context = context;
+            _ticketService = ticketService;
+            _projectService = projectService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             return View();
         }
