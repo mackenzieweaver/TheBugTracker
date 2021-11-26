@@ -14,22 +14,30 @@ namespace TheBugTracker.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IBTTicketHistoryService _historyService;
-        private readonly ApplicationDbContext _context;
-        private readonly IBTTicketService _ticketService;
-        private readonly IBTProjectService _projectService;
+        private readonly IBTFileService _fileService;
 
-        public HomeController(ILogger<HomeController> logger, IBTTicketHistoryService historyService, ApplicationDbContext context, IBTTicketService ticketService,
-        IBTProjectService projectService)
+        // private readonly IBTTicketHistoryService _historyService;
+        // private readonly ApplicationDbContext _context;
+        // private readonly IBTTicketService _ticketService;
+        // private readonly IBTProjectService _projectService;
+
+        public HomeController(ILogger<HomeController> logger,
+            // IBTTicketHistoryService historyService, 
+            // ApplicationDbContext context, 
+            // IBTTicketService ticketService,
+            // IBTProjectService projectService
+            IBTFileService fileService
+        )
         {
             _logger = logger;
-            _historyService = historyService;
-            _context = context;
-            _ticketService = ticketService;
-            _projectService = projectService;
+            _fileService = fileService;
+            // _historyService = historyService;
+            // _context = context;
+            // _ticketService = ticketService;
+            // _projectService = projectService;
         }
 
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
             return View();
         }
