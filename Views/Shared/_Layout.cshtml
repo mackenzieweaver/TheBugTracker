@@ -18,17 +18,16 @@
             height: 12px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #88A7FC;
+            background: #3e87d1;
             border-radius: 13px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #7191FA;
+            background: #3e87d1;
         }
         ::-webkit-scrollbar-track {
             background: #FFFFFF;
             border: 4px solid #FFFFFF;
             border-radius: 13px;
-            box-shadow: inset 3px 3px 21px 0px #A8B7F7;
         }
     </style>
 </head>
@@ -52,7 +51,14 @@
                         <partial name="_LoginPartial" />
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Users">Users</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Ticket</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Projects"
+                            asp-action="Index">Project</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Companies"
@@ -66,15 +72,8 @@
                             asp-action="Index">Notification</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Projects"
-                            asp-action="Index">Project</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="ProjectPriorities"
                             asp-action="Index">ProjectPriority</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Ticket</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="TicketAttachments"
@@ -99,6 +98,9 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="TicketTypes"
                             asp-action="Index">TicketTypes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                     </li>
                 </ul>
             </div>
