@@ -4,7 +4,10 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>TicketStatuses (@Model.Count())</h1>
+<h1>Ticket Statuses (@Model.Count())</h1>
+<a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketStatuses">Seed</a>        
+<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketStatuses">Unseed</a>
+<p><em>Seed data is hardcoded</em></p>
 
 <p>
     <a asp-action="Create">Create New</a>

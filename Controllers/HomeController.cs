@@ -123,7 +123,7 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> UnseedTicketTypes()
         {
             await _seedService.UnseedTicketTypes();
-            return RedirectToAction("Index", "TicketsTypes");
+            return RedirectToAction("Index", "TicketTypes");
         }
         
         public async Task<IActionResult> SeedTicketStatuses()
@@ -135,7 +135,7 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> UnseedTicketStatuses()
         {
             await _seedService.UnseedTicketStatuses();
-            return RedirectToAction("Index", "TicketsStatuses");
+            return RedirectToAction("Index", "TicketStatuses");
         }
         
         public async Task<IActionResult> SeedTicketPriorities()
@@ -147,7 +147,7 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> UnseedTicketPriorities()
         {
             await _seedService.UnseedTicketPriorities();
-            return RedirectToAction("Index", "TicketsPriorities");
+            return RedirectToAction("Index", "TicketPriorities");
         }
 
         public async Task<IActionResult> SeedProjectPriorities()

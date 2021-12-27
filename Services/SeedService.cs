@@ -104,6 +104,7 @@ namespace TheBugTracker.Services
 
         public async Task SeedProjectPriorities()
         {
+            if(_context.ProjectPriorities.Count() > 0) return;            
             await _context.AddAsync(new ProjectPriority { Name = "Very Low" });
             await _context.AddAsync(new ProjectPriority { Name = "Low" });
             await _context.AddAsync(new ProjectPriority { Name = "Normal" });
@@ -213,6 +214,7 @@ namespace TheBugTracker.Services
 
         public async Task SeedTicketPriorities()
         {
+            if(_context.TicketPriorities.Count() > 0) return;
             await _context.AddAsync(new TicketPriority { Name = "Very Low" });
             await _context.AddAsync(new TicketPriority { Name = "Low" });
             await _context.AddAsync(new TicketPriority { Name = "Normal" });
@@ -268,6 +270,7 @@ namespace TheBugTracker.Services
 
                 string title = nodes[i].ChildNodes[1].ChildNodes[3].ChildNodes[1].InnerText;
                 if(title.Length > 50) title = title.Substring(0, 47) + "...";
+
                 string description = nodes[i].ChildNodes[1].ChildNodes[5].ChildNodes[3].InnerText;
                 DateTimeOffset created = DateTime.Now.Add(new TimeSpan(
                     days: (new Random()).Next(0, 365), 
@@ -275,21 +278,22 @@ namespace TheBugTracker.Services
                     minutes: (new Random()).Next(0, 60), 
                     seconds: (new Random()).Next(0, 60))
                 );
+
                 bool archived = (new Random()).Next(0, 10) < 5 ? true : false;
 
-                if(_context.Projects.Count() == 0) await SeedProjects();
+                if(projectIds.Count == 0) await SeedProjects();
                 int projectId = projectIds[(new Random()).Next(0, _context.Projects.Count())];
                 
-                if(_context.TicketTypes.Count() == 0) await SeedTicketTypes();
+                if(ticketTypeIds.Count == 0) await SeedTicketTypes();
                 int ticketTypeId = ticketTypeIds[(new Random()).Next(0, _context.TicketTypes.Count())];
                 
-                if(_context.TicketStatuses.Count() == 0) await SeedTicketTypes();
+                if(ticketStatusIds.Count == 0) await SeedTicketTypes();
                 int ticketStatusId = ticketStatusIds[(new Random()).Next(0, _context.TicketStatuses.Count())];
                 
-                if(_context.TicketPriorities.Count() == 0) await SeedTicketTypes();
+                if(ticketPriorityIds.Count == 0) await SeedTicketTypes();
                 int ticketPriorityId = ticketPriorityIds[(new Random()).Next(0, _context.TicketPriorities.Count())];
                 
-                if(_context.Users.Count() == 0) await SeedUsers();
+                if(userIds.Count == 0) await SeedUsers();
                 string ownerUserId = userIds[(new Random()).Next(0, _context.Users.Count())];
                 string developerUserId = userIds[(new Random()).Next(0, _context.Users.Count())];
 
@@ -331,6 +335,7 @@ namespace TheBugTracker.Services
 
         public async Task SeedTicketStatuses()
         {
+            if(_context.TicketStatuses.Count() > 0) return;
             await _context.AddAsync(new TicketStatus { Name = "Backlog" });
             await _context.AddAsync(new TicketStatus { Name = "Scope" });
             await _context.AddAsync(new TicketStatus { Name = "In Progress" });
@@ -353,6 +358,7 @@ namespace TheBugTracker.Services
 
         public async Task SeedTicketTypes()
         { 
+            if(_context.TicketTypes.Count() > 0) return;
             await _context.AddAsync(new TicketType { Name = "Frontend" });
             await _context.AddAsync(new TicketType { Name = "Backend" });
             await _context.AddAsync(new TicketType { Name = "Fullstack" });
