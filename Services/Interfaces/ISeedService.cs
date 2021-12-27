@@ -5,8 +5,7 @@ namespace TheBugTracker.Services.Interfaces
     public interface ISeedService
     {
         Task SeedAll();
-
-        Task SeedInvites();
+        
         Task SeedNotifications();
         Task SeedTicketAttachments(int ticketId, string ticketUrl);
         Task SeedTicketComments();
@@ -35,5 +34,8 @@ namespace TheBugTracker.Services.Interfaces
         
         Task SeedProjectPriorities();
         Task UnseedProjectPriorities();
+
+        Task SeedInvites(int number);
+        Task UnseedInvites();
     }
 }

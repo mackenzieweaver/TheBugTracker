@@ -92,9 +92,52 @@ namespace TheBugTracker.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SeedInvites()
+        public async Task SeedInvites(int number = defaultSeedNumber)
         {
-            throw new System.NotImplementedException();
+            if(_context.Users.Count() <= 1) await SeedUsers(number);
+            if(_context.Companies.Count() <= 0) await SeedCompanies(number);
+            if(_context.Projects.Count() <= 0) await SeedProjects(number);
+
+            var companyIds = await _context.Companies.Select(x => x.Id).ToListAsync();
+            var projectIds = await _context.Projects.Select(x => x.Id).ToListAsync();
+            var userIds = await _context.Users.Select(x => x.Id).ToListAsync();            
+
+            for (int i = 0; i < number; i++)
+            {
+                var invitorId = userIds[(new Random()).Next(0, userIds.Count)];
+                var inviteeId = invitorId;
+                while(inviteeId == invitorId) inviteeId = userIds[(new Random()).Next(0, userIds.Count)];
+                var invitee = await _context.Users.FindAsync(inviteeId);
+
+                var inviteDate = DateTimeOffset.Now.AddDays((new Random()).Next(-7, 7));
+                Invite invite = new()
+                {
+                    InviteDate = inviteDate,
+                    JoinDate = inviteDate.AddDays(7),
+                    CompanyToken = Guid.NewGuid(),
+                    CompanyId = companyIds[(new Random()).Next(0, companyIds.Count)],
+                    ProjectId = projectIds[(new Random()).Next(0, projectIds.Count)],
+                    InvitorId = invitorId,
+                    InviteeId = inviteeId,
+                    InviteeEmail = invitee.Email,
+                    InviteeFirstName = invitee.FirstName,
+                    InviteeLastName = invitee.LastName,
+                    IsValid = true
+                };
+                await _context.AddAsync(invite);
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UnseedInvites()
+        {
+            var list = await _context.Invites.ToListAsync();
+            if(list is null) return;
+            foreach(var x in list)
+            {
+                _context.Remove(x);
+            }
+            await _context.SaveChangesAsync();
         }
 
         public async Task SeedNotifications()

@@ -161,5 +161,17 @@ namespace TheBugTracker.Controllers
             await _seedService.UnseedProjectPriorities();
             return RedirectToAction("Index", "ProjectPriorities");
         }
+        
+        public async Task<IActionResult> SeedInvites([FromQuery] int number = defaultSeedNumber)
+        {
+            await _seedService.SeedInvites(number);
+            return RedirectToAction("Index", "Invites");
+        }
+        
+        public async Task<IActionResult> UnseedInvites()
+        {
+            await _seedService.UnseedInvites();
+            return RedirectToAction("Index", "Invites");
+        }
     }
 }
