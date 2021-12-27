@@ -12,6 +12,7 @@ using TheBugTracker.Services.Interfaces;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using System.Net;
 
 namespace TheBugTracker.Services
 {
@@ -242,7 +243,48 @@ namespace TheBugTracker.Services
         
         public async Task SeedTicketAttachments(int ticketId, string ticketUrl)
         {
-            string url = "https://catalog.data.gov/dataset" + ticketUrl;
+            HtmlWeb web = new HtmlWeb();
+            string url = "https://catalog.data.gov" + ticketUrl;
+            HtmlDocument doc = web.Load(url);
+            var nodes = doc.DocumentNode.Descendants("a");
+            List<string> attachments = nodes.Select(node => node.GetAttributeValue("href", ""))
+                .Where(href => href.Contains(".pdf") || href.Contains(".png") || href.Contains(".jpg")).ToList();
+
+            var userIds = await _context.Users.Select(x => x.Id).ToListAsync();
+            
+            var client = new WebClient();
+            string token = _configuration.GetSection("nasa").Value;
+            client.Headers[HttpRequestHeader.Authorization] = $"Bearer {token}";
+            foreach (var attachment in attachments)
+            {
+                Uri uri = new Uri(attachment);
+                int index = uri.Segments.Count() - 1;
+                string filename = uri.Segments[index];
+                var dir = Directory.GetCurrentDirectory();
+                var path = Path.Combine(dir, "Data", "TicketAttachments", filename);
+                if(!File.Exists(path)) 
+                {
+                    try
+                    {
+                        client.DownloadFile(uri, path);
+                    }
+                    catch(WebException ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        continue;
+                    }
+                }
+
+                TicketAttachment ticketAttachment = new()
+                {
+                    TicketId = ticketId,
+                    Created = DateTimeOffset.Now.AddDays((new Random()).Next(-7, 7)),
+                    UserId = userIds[(new Random()).Next(0, userIds.Count)],
+                    FileName = filename
+                };
+                await _context.AddAsync(ticketAttachment);
+            }
+            await _context.SaveChangesAsync();
         }
 
         public async Task SeedTicketComments()
@@ -387,12 +429,12 @@ namespace TheBugTracker.Services
 
         public async Task UnseedTickets()
         {
-            List<Ticket> list = await _context.Tickets.ToListAsync();
-            if(list is null) return;
-            foreach(var x in list)
-            {
-                _context.Remove(x);
-            }
+            var attachments = await _context.TicketAttachments.ToListAsync();
+            if(attachments is not null) foreach(var x in attachments) _context.Remove(x);
+            await _context.SaveChangesAsync();
+
+            List<Ticket> tickets = await _context.Tickets.ToListAsync();
+            if(tickets is not null) foreach(var x in tickets) _context.Remove(x);
             await _context.SaveChangesAsync();
         }
 
@@ -448,9 +490,9 @@ namespace TheBugTracker.Services
         {
             string seededUserPassword = "Pa$$w0rd";
             string url = "https://randomuser.me/api/";
+            HttpClient client = new HttpClient();
             for (int i = 0; i < number; i++)
             {
-                HttpClient client = new HttpClient();
                 HttpResponseMessage response = await client.GetAsync(url);
                 string json = await response.Content.ReadAsStringAsync();
                 try
