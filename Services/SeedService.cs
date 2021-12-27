@@ -281,21 +281,41 @@ namespace TheBugTracker.Services
 
                 bool archived = (new Random()).Next(0, 10) < 5 ? true : false;
 
-                if(projectIds.Count == 0) await SeedProjects();
-                int projectId = projectIds[(new Random()).Next(0, _context.Projects.Count())];
+                if(projectIds.Count == 0) 
+                {
+                    await SeedProjects();
+                    projectIds = await _context.Projects.Select(x => x.Id).ToListAsync();
+                }
+                int projectId = projectIds[(new Random()).Next(0, projectIds.Count)];
                 
-                if(ticketTypeIds.Count == 0) await SeedTicketTypes();
-                int ticketTypeId = ticketTypeIds[(new Random()).Next(0, _context.TicketTypes.Count())];
+                if(ticketTypeIds.Count == 0) 
+                {
+                    await SeedTicketTypes();
+                    ticketTypeIds = await _context.TicketTypes.Select(x => x.Id).ToListAsync();
+                }
+                int ticketTypeId = ticketTypeIds[(new Random()).Next(0, ticketTypeIds.Count)];
                 
-                if(ticketStatusIds.Count == 0) await SeedTicketTypes();
-                int ticketStatusId = ticketStatusIds[(new Random()).Next(0, _context.TicketStatuses.Count())];
+                if(ticketStatusIds.Count == 0) 
+                {
+                    await SeedTicketStatuses();
+                    ticketStatusIds = await _context.TicketStatuses.Select(x => x.Id).ToListAsync();
+                }
+                int ticketStatusId = ticketStatusIds[(new Random()).Next(0, ticketStatusIds.Count)];
                 
-                if(ticketPriorityIds.Count == 0) await SeedTicketTypes();
-                int ticketPriorityId = ticketPriorityIds[(new Random()).Next(0, _context.TicketPriorities.Count())];
+                if(ticketPriorityIds.Count == 0) 
+                {
+                    await SeedTicketPriorities();
+                    ticketPriorityIds = await _context.TicketPriorities.Select(x => x.Id).ToListAsync();
+                }
+                int ticketPriorityId = ticketPriorityIds[(new Random()).Next(0, ticketPriorityIds.Count)];
                 
-                if(userIds.Count == 0) await SeedUsers();
-                string ownerUserId = userIds[(new Random()).Next(0, _context.Users.Count())];
-                string developerUserId = userIds[(new Random()).Next(0, _context.Users.Count())];
+                if(userIds.Count == 0) 
+                {
+                    await SeedUsers();
+                    userIds = await _context.Users.Select(x => x.Id).ToListAsync();
+                }
+                string ownerUserId = userIds[(new Random()).Next(0, userIds.Count)];
+                string developerUserId = userIds[(new Random()).Next(0, userIds.Count)];
 
                 Ticket ticket = new()
                 {
