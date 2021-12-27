@@ -82,3 +82,19 @@
     <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+<br>
+<h4>Attachments</h4>
+@foreach (var attachment in Model.Attachments)
+{
+    string path = $"../../attachments/{attachment.FileName}";
+    @if(attachment.FileName.EndsWith(".json")) 
+    {
+        <a href=@path target="_blank">meta-data.json</a>
+    }
+    else
+    {
+        <a href=@path target="_blank">@attachment.FileName</a>        
+    } 
+    <br>
+}

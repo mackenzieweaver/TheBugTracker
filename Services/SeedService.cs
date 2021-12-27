@@ -255,13 +255,19 @@ namespace TheBugTracker.Services
             var client = new WebClient();
             string token = _configuration.GetSection("nasa").Value;
             client.Headers[HttpRequestHeader.Authorization] = $"Bearer {token}";
+
+            Uri uri;
+            int index;
+            string filename;
+            string dir = Directory.GetCurrentDirectory();
+            string path;
             foreach (var attachment in attachments)
             {
-                Uri uri = new Uri(attachment);
-                int index = uri.Segments.Count() - 1;
-                string filename = uri.Segments[index];
-                var dir = Directory.GetCurrentDirectory();
-                var path = Path.Combine(dir, "Data", "TicketAttachments", filename);
+                uri = new Uri(attachment);
+                index = uri.Segments.Count() - 1;
+                filename = uri.Segments[index];
+                path = Path.Combine(dir, "wwwroot", "attachments", filename);
+
                 if(!File.Exists(path)) 
                 {
                     try
@@ -284,6 +290,36 @@ namespace TheBugTracker.Services
                 };
                 await _context.AddAsync(ticketAttachment);
             }
+            await _context.SaveChangesAsync();
+
+            var metadata = doc.DocumentNode
+                .SelectSingleNode("//*[@id='dataset-metadata-source']/ul/li/p/a")
+                .GetAttributeValue("href", "");
+            
+            uri = new Uri("https://catalog.data.gov" + metadata);
+            index = uri.Segments.Count() - 1;
+            filename = uri.Segments[index] + ".json";
+            path = Path.Combine(dir, "wwwroot", "attachments", filename);
+            if(!File.Exists(path)) 
+            {
+                try
+                {
+                    client.DownloadFile(uri, path);
+                }
+                catch(NotSupportedException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+
+            TicketAttachment ta = new()
+            {
+                TicketId = ticketId,
+                Created = DateTimeOffset.Now.AddDays((new Random()).Next(-7, 7)),
+                UserId = userIds[(new Random()).Next(0, userIds.Count)],
+                FileName = filename
+            };
+            await _context.AddAsync(ta);
             await _context.SaveChangesAsync();
         }
 
@@ -429,6 +465,10 @@ namespace TheBugTracker.Services
 
         public async Task UnseedTickets()
         {
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "attachments");
+            Directory.Delete(path, true);
+            Directory.CreateDirectory(path);
+            
             var attachments = await _context.TicketAttachments.ToListAsync();
             if(attachments is not null) foreach(var x in attachments) _context.Remove(x);
             await _context.SaveChangesAsync();
