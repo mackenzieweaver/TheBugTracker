@@ -8,7 +8,6 @@ namespace TheBugTracker.Services.Interfaces
         
         Task SeedNotifications();
         Task SeedTicketAttachments(int ticketId, string ticketUrl);
-        Task SeedTicketComments();
         Task SeedTicketHistories();
 
         Task SeedUsers(int number);
@@ -37,5 +36,9 @@ namespace TheBugTracker.Services.Interfaces
 
         Task SeedInvites(int number);
         Task UnseedInvites();
+
+        
+        Task SeedTicketComments(int ticketId);
+        Task UnseedTicketComments();
     }
 }

@@ -7,7 +7,7 @@ namespace TheBugTracker.Models
     {
         public int Id { get; set; }
 
-        [DisplayName("Member Comment")]
+        [DisplayName("Comment")]
         public string Comment { get; set; }
 
         [DisplayName("Date")]

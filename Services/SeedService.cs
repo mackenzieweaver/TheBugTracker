@@ -13,6 +13,7 @@ using HtmlAgilityPack;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.Net;
+using DeepAI;
 
 namespace TheBugTracker.Services
 {
@@ -41,8 +42,6 @@ namespace TheBugTracker.Services
             await SeedProjectPriorities();
             await SeedProjects();
             await SeedTickets();
-            
-            await SeedTicketComments();
             await SeedTicketHistories();
             await SeedNotifications();
         }
@@ -323,9 +322,47 @@ namespace TheBugTracker.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SeedTicketComments()
+        public async Task SeedTicketComments(int ticketId)
         {
-            throw new System.NotImplementedException();
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+
+            List<string> words = ticket.Description.Split(" ").ToList();
+            string[] mostPopular76EnglishWords = {"the", "be", "to", "of", "and", "a", "in", "that", "have", "I", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from", "they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their", "what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like", "time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could", "them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also", "back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want", "because", "any", "these", "give", "day", "most", "us" };
+            foreach(string word in mostPopular76EnglishWords) words.Remove(word);
+
+            var deepAi = new DeepAI_API(apiKey: _configuration.GetSection("deepai").Value);
+            StandardApiResponse resp = deepAi.callStandardApi("text-generator", new { text = words[0] + words[1] + words[2] });
+            var json = deepAi.objectAsJsonString(resp);
+
+            var deepAiResponse = JsonSerializer.Deserialize<DeepAiResponse>(json);            
+            var sentences = deepAiResponse.output.Replace(@"\\n", " ").Replace(@"\n", " ").Split(". ").ToList();
+            sentences = sentences.Where(s => s.Split().Count() > 25).ToList();
+
+            var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
+
+            foreach(var sentence in sentences)
+            {
+                TicketComment c = new ()
+                {
+                    Comment = sentence,
+                    Created = DateTimeOffset.Now.AddDays((new Random()).Next(-7, 7)).AddHours((new Random()).Next(0, 24)).AddMinutes((new Random()).Next(0, 60)),
+                    TicketId = ticketId,
+                    UserId = userIds[(new Random()).Next(0, userIds.Count)]
+                };
+                await _context.AddAsync(c);
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UnseedTicketComments()
+        {
+            var list = await _context.TicketComments.ToListAsync();
+            if(list is null) return;
+            foreach(var x in list)
+            {
+                _context.Remove(x);
+            }
+            await _context.SaveChangesAsync();
         }
 
         public async Task SeedTicketHistories()
@@ -460,6 +497,7 @@ namespace TheBugTracker.Services
             foreach (var item in ticketIdsAndUrls)
             {
                 await SeedTicketAttachments(item.Key, item.Value);
+                await SeedTicketComments(item.Key);
             }
         }
 
@@ -471,6 +509,10 @@ namespace TheBugTracker.Services
             
             var attachments = await _context.TicketAttachments.ToListAsync();
             if(attachments is not null) foreach(var x in attachments) _context.Remove(x);
+            await _context.SaveChangesAsync();
+
+            var comments = await _context.TicketComments.ToListAsync();
+            if(comments is not null) foreach(var x in comments) _context.Remove(x);
             await _context.SaveChangesAsync();
 
             List<Ticket> tickets = await _context.Tickets.ToListAsync();
@@ -554,8 +596,8 @@ namespace TheBugTracker.Services
                     Console.WriteLine(ex);
                     i--; // retry
                 }
-                client.Dispose();
             }
+            client.Dispose();
         }
 
         public async Task UnseedUsers()
