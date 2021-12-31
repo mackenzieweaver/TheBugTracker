@@ -6,7 +6,6 @@ namespace TheBugTracker.Services.Interfaces
     {
         Task SeedAll();
         
-        Task SeedNotifications();
         Task SeedTicketAttachments(int ticketId, string ticketUrl);
         Task SeedTicketHistories();
 
@@ -40,5 +39,7 @@ namespace TheBugTracker.Services.Interfaces
         
         Task SeedTicketComments(int ticketId);
         Task UnseedTicketComments();
+
+        Task SeedNotifications(int ticketId, string senderId, string title, string message);
     }
 }

@@ -43,7 +43,6 @@ namespace TheBugTracker.Services
             await SeedProjects();
             await SeedTickets();
             await SeedTicketHistories();
-            await SeedNotifications();
         }
 
         public async Task SeedCompanies(int number = defaultSeedNumber)
@@ -140,9 +139,34 @@ namespace TheBugTracker.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SeedNotifications()
+        public async Task SeedNotifications(int ticketId, string senderId, string title, string message)
         {
-            throw new System.NotImplementedException();
+            var ticket = await _context.Tickets
+                .Include(t => t.Comments)
+                .FirstOrDefaultAsync(t => t.Id == ticketId);
+
+            var userIdsOnTicket = ticket.Comments.Select(x => x.UserId).ToList();
+            userIdsOnTicket.Add(ticket.DeveloperUserId);
+            userIdsOnTicket.Add(ticket.OwnerUserId);
+
+            // send to everyone on ticket
+            foreach (var userId in userIdsOnTicket)
+            {
+                Notification n = new()
+                {
+                    TicketId = ticketId,
+                    Title = title,
+                    Message = message,
+                    Created = DateTime.Now
+                        .AddDays((new Random()).Next(-7, 7))
+                        .AddHours((new Random()).Next(-12, 12))
+                        .AddMinutes((new Random()).Next(-30, 30)),
+                    RecipientId = userId,
+                    SenderId = senderId
+                };
+                await _context.AddAsync(n);
+            }
+            await _context.SaveChangesAsync();
         }
 
         public async Task SeedProjectPriorities()
@@ -288,6 +312,9 @@ namespace TheBugTracker.Services
                     FileName = filename
                 };
                 await _context.AddAsync(ticketAttachment);
+                
+                var ticket = await _context.Tickets.FindAsync(ticketId);
+                await SeedNotifications(ticket.Id, ticket.OwnerUserId, $"New attachment on #{ticket.Id.ToString()}", $"{ticketAttachment.FileName}");
             }
             await _context.SaveChangesAsync();
 
@@ -350,8 +377,10 @@ namespace TheBugTracker.Services
                     UserId = userIds[(new Random()).Next(0, userIds.Count)]
                 };
                 await _context.AddAsync(c);
+                await _context.SaveChangesAsync();
+                var user = await _context.Users.FindAsync(c.UserId);
+                await SeedNotifications(c.TicketId, c.UserId, $"New comment on {ticketId.ToString()}", $"{user.FullName}: {c.Comment}");
             }
-            await _context.SaveChangesAsync();
         }
 
         public async Task UnseedTicketComments()
@@ -397,13 +426,12 @@ namespace TheBugTracker.Services
             int page = 1;
             string url = $"https://catalog.data.gov/dataset?page={page}";
 
-            int numberOfTicketsInDb = _context.Tickets.Count();
-
             HtmlWeb web = new HtmlWeb();
             HtmlDocument doc = web.Load(url);
             HtmlNodeCollection nodes = doc.DocumentNode.SelectNodes("//*[@id='content']/div[2]/div/section[1]/div[2]/ul/li");
             
             int numberOfTicketsOnPage = nodes.Count;
+            int numberOfTicketsInDb = _context.Tickets.Count();
             int nextTicketIndex = numberOfTicketsInDb % numberOfTicketsOnPage;
             int max = nextTicketIndex + number;
             
@@ -496,8 +524,10 @@ namespace TheBugTracker.Services
 
             foreach (var item in ticketIdsAndUrls)
             {
-                await SeedTicketAttachments(item.Key, item.Value);
-                await SeedTicketComments(item.Key);
+                var ticket = await _context.Tickets.FindAsync(item.Key);
+                await SeedNotifications(ticket.Id, ticket.OwnerUserId, $"New ticket #{ticket.Id.ToString()}", $"{ticket.Description}");
+                await SeedTicketAttachments(ticket.Id, item.Value);
+                await SeedTicketComments(ticket.Id);
             }
         }
 
@@ -513,6 +543,10 @@ namespace TheBugTracker.Services
 
             var comments = await _context.TicketComments.ToListAsync();
             if(comments is not null) foreach(var x in comments) _context.Remove(x);
+            await _context.SaveChangesAsync();
+            
+            var notifications = await _context.Notifications.ToListAsync();
+            if(notifications is not null) foreach(var x in notifications) _context.Remove(x);
             await _context.SaveChangesAsync();
 
             List<Ticket> tickets = await _context.Tickets.ToListAsync();
