@@ -173,5 +173,17 @@ namespace TheBugTracker.Controllers
             await _seedService.UnseedInvites();
             return RedirectToAction("Index", "Invites");
         }
+        
+        public async Task<IActionResult> SeedTicketHistories([FromQuery] int number = defaultSeedNumber)
+        {
+            await _seedService.SeedTicketHistories(number);
+            return RedirectToAction("Index", "TicketHistories");
+        }
+        
+        public async Task<IActionResult> UnseedTicketHistories()
+        {
+            await _seedService.UnseedTicketHistories();
+            return RedirectToAction("Index", "TicketHistories");
+        }
     }
 }

@@ -23,12 +23,14 @@ namespace TheBugTracker.Services
         private readonly ApplicationDbContext _context;
         private readonly UserManager<BTUser> _userManager;
         private readonly IConfiguration _configuration;
+        private readonly IBTTicketHistoryService _historyService;
 
-        public SeedService(ApplicationDbContext context, UserManager<BTUser> userManager, IConfiguration configuration)
+        public SeedService(ApplicationDbContext context, UserManager<BTUser> userManager, IConfiguration configuration, IBTTicketHistoryService historyService)
         {
             _context = context;
             _userManager = userManager;
             _configuration = configuration;
+            _historyService = historyService;
         }
 
         public async Task SeedAll()
@@ -42,7 +44,7 @@ namespace TheBugTracker.Services
             await SeedProjectPriorities();
             await SeedProjects();
             await SeedTickets();
-            await SeedTicketHistories();
+            await SeedTicketHistories(defaultSeedNumber);
         }
 
         public async Task SeedCompanies(int number = defaultSeedNumber)
@@ -394,9 +396,71 @@ namespace TheBugTracker.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task SeedTicketHistories()
+        public async Task SeedTicketHistories(int number)
         {
-            throw new System.NotImplementedException();
+            var ticketIds = await _context.Tickets.Select(t => t.Id).ToListAsync();
+            if(ticketIds.Count <= number) 
+            {
+                await SeedTickets();
+                ticketIds = await _context.Tickets.Select(t => t.Id).ToListAsync();
+            }
+            for (int i = 0; i < number; i++)
+            {
+                var randomId = (new Random()).Next(0, ticketIds.Count);
+                var ticket = await _context.Tickets.FindAsync(ticketIds[randomId]);
+
+                // make copy of ticket to use as "oldTicket" in history service
+                var oldTicket = new Ticket();
+                Type type = oldTicket.GetType();
+                foreach(var prop in type.GetProperties())
+                {
+                    var val = prop.GetValue(ticket);
+                    type.GetProperty(prop.Name).SetValue(oldTicket, val);
+                }
+
+                var userIds = await _context.Users.Select(u => u.Id).ToListAsync();
+                var r = (new Random()).Next(1, 4);
+                switch (r)
+                {
+                    case 1:
+                        var types = await _context.TicketTypes.Where(x => x.Id != ticket.TicketTypeId).Select(x => x.Id).ToListAsync();
+                        ticket.TicketTypeId = types[(new Random()).Next(0, types.Count)];
+                        break;
+                    case 2:
+                        var statuses = await _context.TicketStatuses.Where(x => x.Id != ticket.TicketStatusId).Select(x => x.Id).ToListAsync();
+                        ticket.TicketStatusId = statuses[(new Random()).Next(0, statuses.Count)];
+                        break;
+                    case 3:
+                        var priorities = await _context.TicketPriorities.Where(x => x.Id != ticket.TicketPriorityId).Select(x => x.Id).ToListAsync();
+                        ticket.TicketPriorityId = priorities[(new Random()).Next(0, priorities.Count)];   
+                        break;
+                    case 4:
+                        ticket.DeveloperUserId = userIds[(new Random()).Next(0, userIds.Count)];
+                        break;
+                    default:
+                        break;
+                }
+                ticket.Updated = ticket.Created
+                    .AddDays((new Random()).Next(0, 7))
+                    .AddHours((new Random()).Next(0, 24))
+                    .AddMinutes((new Random()).Next(0, 60));
+                _context.Update(ticket);
+                await _context.SaveChangesAsync();
+                // need a userId for history service (who made the change)
+                randomId = (new Random()).Next(0, userIds.Count);
+                await _historyService.AddHistoryAsync(oldTicket, ticket, userIds[randomId]);
+            }
+        }
+
+        public async Task UnseedTicketHistories()
+        {
+            var list = await _context.TicketHistories.ToListAsync();
+            if(list is null) return;
+            foreach(var x in list)
+            {
+                _context.Remove(x);
+            }
+            await _context.SaveChangesAsync();
         }
 
         public async Task SeedTicketPriorities()
@@ -525,6 +589,7 @@ namespace TheBugTracker.Services
             foreach (var item in ticketIdsAndUrls)
             {
                 var ticket = await _context.Tickets.FindAsync(item.Key);
+                await _historyService.AddHistoryAsync(null, ticket, ticket.OwnerUserId);
                 await SeedNotifications(ticket.Id, ticket.OwnerUserId, $"New ticket #{ticket.Id.ToString()}", $"{ticket.Description}");
                 await SeedTicketAttachments(ticket.Id, item.Value);
                 await SeedTicketComments(ticket.Id);
