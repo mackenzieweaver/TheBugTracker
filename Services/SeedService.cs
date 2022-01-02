@@ -306,6 +306,8 @@ namespace TheBugTracker.Services
                     }
                 }
 
+                if(!File.Exists(path)) continue;
+
                 TicketAttachment ticketAttachment = new()
                 {
                     TicketId = ticketId,

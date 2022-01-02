@@ -17,10 +17,12 @@
 
 <div class="row">
     <div class="col">
+
         <p class="mb-0"><strong>Description</strong></p>
         @Model.Description
         <br>
         <br>
+
         <h4>Attachments</h4>
         @if(User.Identity.IsAuthenticated)
         {
@@ -36,26 +38,24 @@
         }
         @foreach (var attachment in Model.Attachments)
         {
-            string path = $"../../attachments/{attachment.FileName}";
+            var dir = Directory.GetCurrentDirectory();
+            string path = System.IO.Path.Combine(dir, "wwwroot", "attachments", attachment.FileName);
             string extension = System.IO.Path.GetExtension(attachment.FileName);
-            bool fileOnDisk = File.Exists(path);
-            string file = "";
-            if(!fileOnDisk) file = fileService.ConvertByteArrayToFile(attachment.FileData, extension);
-            
-            @if(fileOnDisk)
+            string file = $"../../attachments/{attachment.FileName}";
+            @if(File.Exists(path))
             {
                 @if(attachment.FileName.EndsWith(".json"))
-                {
-                    <a href=@path target="_blank">meta-data.json</a>
+                {                    
+                    <a href=@file target="_blank">meta-data.json</a>
                 }
                 else
                 {
-                    <a href=@path target="_blank">@attachment.FileName</a>
+                    <a href=@file target="_blank">@attachment.FileName</a>
                 }
             }
             else
             {
-                <a href=@file target="_blank" download=@attachment.FileName>@attachment.FileName</a>
+                <a href=@fileService.ConvertByteArrayToFile(attachment.FileData, extension) target="_blank" download=@attachment.FileName>@attachment.FileName</a>
             }
             <br>
         }
@@ -108,7 +108,6 @@
                 <br>
             </div>
         </div>
-
         <div class="row">            
             <div class="col">
                 <br>
