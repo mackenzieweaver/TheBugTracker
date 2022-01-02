@@ -322,8 +322,9 @@ namespace TheBugTracker.Services
 
             var metadata = doc.DocumentNode
                 .SelectSingleNode("//*[@id='dataset-metadata-source']/ul/li/p/a")
-                .GetAttributeValue("href", "");
-            
+                .GetAttributeValue("href", "");                
+            if(metadata is null) return;
+
             uri = new Uri("https://catalog.data.gov" + metadata);
             index = uri.Segments.Count() - 1;
             filename = uri.Segments[index] + ".json";
@@ -686,7 +687,10 @@ namespace TheBugTracker.Services
                         FirstName = root.results[0].name.first,
                         LastName = root.results[0].name.last,
                         AvatarFileName = root.results[0].picture.thumbnail,
-                        EmailConfirmed = true
+                        EmailConfirmed = true,
+                        PhoneNumber = "123-456-7890",
+                        PhoneNumberConfirmed = true,
+                        LockoutEnabled = false
                     };
                     var result = await _userManager.CreateAsync(user, seededUserPassword);
                 }

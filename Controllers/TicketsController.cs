@@ -42,7 +42,8 @@ namespace TheBugTracker.Controllers
                 .Include(t => t.TicketStatus)
                 .Include(t => t.TicketType)
                 .Include(t => t.Attachments)
-                .Include(t => t.Comments).ThenInclude(c => c.User)
+                .Include(t => t.Comments).ThenInclude(x => x.User)
+                .Include(t => t.History).ThenInclude(x => x.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (ticket == null)
             {

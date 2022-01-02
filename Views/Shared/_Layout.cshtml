@@ -45,10 +45,10 @@
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="height: 100vh">
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                        <partial name="_LoginPartial" />
                     </li>
                     <li class="nav-item">
-                        <partial name="_LoginPartial" />
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Users">Users</a>
@@ -76,14 +76,6 @@
                             asp-action="Index">ProjectPriority</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketAttachments"
-                            asp-action="Index">TicketAttachment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketComments"
-                            asp-action="Index">TicketComment</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link text-dark" asp-area="" asp-controller="TicketHistories"
                             asp-action="Index">TicketHistory</a>
                     </li>
@@ -109,9 +101,7 @@
     </div>
 
     <div class="col p-3 customcontainer">
-        <main role="main">
-            @RenderBody()
-        </main>
+        @RenderBody()
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

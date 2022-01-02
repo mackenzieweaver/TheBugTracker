@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using TheBugTracker.Models;
+using TheBugTracker.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace TheBugTracker.Areas.Identity.Pages.Account
 {
@@ -19,14 +21,17 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly UserManager<BTUser> _userManager;
+        private readonly ApplicationDbContext _context;
         private readonly SignInManager<BTUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
 
         public LoginModel(SignInManager<BTUser> signInManager, 
             ILogger<LoginModel> logger,
-            UserManager<BTUser> userManager)
+            UserManager<BTUser> userManager,
+            ApplicationDbContext context)
         {
             _userManager = userManager;
+            _context = context;
             _signInManager = signInManager;
             _logger = logger;
         }
@@ -82,7 +87,8 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == Input.Email);
+                var result = await _signInManager.PasswordSignInAsync(user.UserName, Input.Password, Input.RememberMe, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
@@ -103,7 +109,6 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
                     return Page();
                 }
             }
-
             // If we got this far, something failed, redisplay form
             return Page();
         }
