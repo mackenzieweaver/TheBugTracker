@@ -86,34 +86,13 @@ namespace TheBugTracker.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] TicketStatus ticketStatus)
+        public async Task<IActionResult> Edit(int id, int ticketId)
         {
-            if (id != ticketStatus.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(ticketStatus);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TicketStatusExists(ticketStatus.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(ticketStatus);
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+            ticket.TicketStatusId = id;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
         }
 
         // GET: TicketStatuses/Delete/5

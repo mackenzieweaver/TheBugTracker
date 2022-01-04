@@ -45,11 +45,15 @@ namespace TheBugTracker.Controllers
                 .Include(t => t.Comments).ThenInclude(x => x.User)
                 .Include(t => t.History).ThenInclude(x => x.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (ticket == null)
             {
                 return NotFound();
             }
-
+            ViewData["StatusList"] = new SelectList(_context.TicketStatuses.Where(x => x.Id != ticket.TicketStatusId), "Id", "Name");
+            ViewData["PriorityList"] = new SelectList(_context.TicketPriorities.Where(x => x.Id != ticket.TicketPriorityId), "Id", "Name");
+            ViewData["TypeList"] = new SelectList(_context.TicketTypes.Where(x => x.Id != ticket.TicketTypeId), "Id", "Name");
+            ViewData["AssigneeList"] = new SelectList(_context.Users.Where(x => x.Id != ticket.DeveloperUserId), "Id", "FullName");
             return View(ticket);
         }
 
@@ -148,6 +152,17 @@ namespace TheBugTracker.Controllers
             ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id", ticket.TicketStatusId);
             ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Id", ticket.TicketTypeId);
             return View(ticket);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDeveloper(string id, int ticketId)
+        {
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+            ticket.DeveloperUserId = id;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
         }
 
         // GET: Tickets/Delete/5

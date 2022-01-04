@@ -90,21 +90,68 @@
     <div class="col-sm-4">
         <div class="row">
             <div class="col">
-                Status: @Model.TicketStatus.Name
-                <br>
-                Priority: @Model.TicketPriority.Name
-                <br>
-                Type: @Model.TicketType.Name
-                <br>
-
-                Assignee: @Model.DeveloperUser.FullName
-                <br>
-                Reporter: @Model.OwnerUser.FullName
-                <br>
-
-                Created: @Model.Created
-                <br>
-                Updated: @Model.Created
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketStatusId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketStatusForm" asp-controller="TicketStatuses" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.StatusList">
+                                <option value="@Model.TicketStatusId">@Model.TicketStatus.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketPriorityId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketPriorityForm" asp-controller="TicketPriorities" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.PriorityList">
+                                <option value="@Model.TicketPriorityId">@Model.TicketPriority.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketTypeId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketTypeForm" asp-controller="TicketTypes" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.TypeList">
+                                <option value="@Model.TicketTypeId">@Model.TicketType.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="DeveloperUserId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketAssigneeForm" asp-controller="Tickets" asp-action="EditDeveloper" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.AssigneeList">
+                                <option value="@Model.DeveloperUserId">@Model.DeveloperUser.FullName</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    Reporter: @Model.OwnerUser.FullName
+                </div>
+                <div class="mb-2">
+                    Created: @Model.Created.ToString("d") @Model.Created.ToString("t")
+                </div>
+                @if(Model.Updated is not null) 
+                {
+                    <span>Updated:</span> <span>@Model.Updated?.ToString("d")</span> <span>@Model.Updated?.ToString("t")</span>
+                }
                 <br>
             </div>
         </div>
@@ -138,3 +185,14 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript">  
+    const statusForm = document.getElementById("TicketStatusForm")
+    statusForm.addEventListener("change", () => statusForm.submit())
+    const priorityForm = document.getElementById("TicketPriorityForm")
+    priorityForm.addEventListener("change", () => priorityForm.submit())
+    const typeForm = document.getElementById("TicketTypeForm")
+    typeForm.addEventListener("change", () => typeForm.submit())
+    const assigneeForm = document.getElementById("TicketAssigneeForm")
+    assigneeForm.addEventListener("change", () => assigneeForm.submit())
+</script>  
