@@ -1,46 +1,101 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>    
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedUsers">Seed Users</a>    
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedUsers">Unseed Users</a> 
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedCompanies">Seed Companies</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedCompanies">Unseed Companies</a>  
-    <br>      
-    <br>      
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedProjects">Seed Projects</a>     
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedProjects">Unseed Projects</a> 
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTickets">Seed Tickets</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTickets">Unseed Tickets</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketTypes">Seed TicketTypes</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketTypes">Unseed TicketTypes</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketStatuses">Seed TicketStatuses</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketStatuses">Unseed TicketStatuses</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketPriorities">Seed TicketPriorities</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketPriorities">Unseed TicketsPriorities</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedProjectPriorities">Seed ProjectPriorities</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedProjectPriorities">Unseed ProjectPriorities</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedInvites">Seed Invites</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedInvites">Unseed Invites</a>
-    <br>   
-    <br>   
-    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketHistories">Seed Histories</a>        
-    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketHistories">Unseed Histories</a>
+﻿<div class="row">
+    <div class="col p-0 mx-5">
+        <h1>Dashboard</h1>
+        <hr>
+    </div>
 </div>
+
+<div class="row">
+    <div class="col p-0 ml-5">
+        <a asp-controller="Tickets" asp-action="Create" class="btn btn-primary">Create new ticket</a>
+    </div>
+</div>
+
+<br>
+
+<div class="row justify-content-around">
+    <div class="col-sm mx-5 px-5 py-3 border rounded">
+        <h4>Tickets by Type</h2>
+        <canvas id="ticketTypesDoughnutChart"></canvas>
+    </div>
+    
+    <div class="col-sm px-5 py-3 border rounded">
+        <h4>Tickets by Status</h2>
+        <canvas id="ticketStatusesDoughnutChart"></canvas>
+    </div>
+    
+    <div class="col-sm mx-5 px-5 py-3 border rounded">
+        <h4>Tickets by Priority</h2>
+        <canvas id="ticketPrioritiesDoughnutChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    fetch("/Chart/TicketTypes").then(r => r.json()).then(d => {
+        const labels = Object.keys(d)
+        let colors = []
+        labels.forEach((x, i) => colors.push(`rgba(255, 0, 0, ${(i + 1) / 10})`))
+        const data = {
+            labels: labels,
+            datasets: [{
+                data: Object.values(d),
+                backgroundColor: colors
+            }]
+        };
+        const config = {
+            type: 'doughnut',
+            data: data,
+            options: {}
+        };
+        const myChart = new Chart(
+            document.getElementById('ticketTypesDoughnutChart'),
+            config
+        );
+    })
+    
+    fetch("/Chart/TicketStatuses").then(r => r.json()).then(d => {
+        const labels = Object.keys(d)
+        let colors = []
+        labels.forEach((x, i) => colors.push(`rgba(0, 255, 0, ${(i + 1) / 10})`))
+        const data = {
+            labels: labels,
+            datasets: [{
+                data: Object.values(d),
+                backgroundColor: colors
+            }]
+        };
+        const config = {
+            type: 'doughnut',
+            data: data,
+            options: {}
+        };
+        const myChart = new Chart(
+            document.getElementById('ticketStatusesDoughnutChart'),
+            config
+        );
+    })
+    
+    fetch("/Chart/TicketPriorities").then(r => r.json()).then(d => {
+        const labels = Object.keys(d)
+        let colors = []
+        labels.forEach((x, i) => colors.push(`rgba(0, 0, 255, ${(i + 1) / 10})`))
+        const data = {
+            labels: labels,
+            datasets: [{
+                data: Object.values(d),
+                backgroundColor: colors
+            }]
+        };
+        const config = {
+            type: 'doughnut',
+            data: data,
+            options: {}
+        };
+        const myChart = new Chart(
+            document.getElementById('ticketPrioritiesDoughnutChart'),
+            config
+        );
+    })
+</script>
