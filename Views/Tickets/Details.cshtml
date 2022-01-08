@@ -142,16 +142,41 @@
                         </form>
                     </div>
                 </div>
-                <div class="mb-2">
-                    Reporter: @Model.OwnerUser.FullName
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="OwnerUserId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        @Model.OwnerUser.FullName
+                    </div>
                 </div>
-                <div class="mb-2">
-                    Created: @Model.Created.ToString("d") @Model.Created.ToString("t")
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="Created" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        @Model.Created.ToString("d") @Model.Created.ToString("t")
+                    </div>
                 </div>
                 @if(Model.Updated is not null) 
                 {
-                    <span>Updated:</span> <span>@Model.Updated?.ToString("d")</span> <span>@Model.Updated?.ToString("t")</span>
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="Updated" class="control-label"></label>
+                        </div>
+                        <div class="col">
+                            <span>Updated:</span> <span>@Model.Updated?.ToString("d")</span> <span>@Model.Updated?.ToString("t")</span>
+                        </div>
+                    </div>                    
                 }
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="Archived" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        @Model.Archived.ToString()
+                    </div>
+                </div>
                 <br>
             </div>
         </div>

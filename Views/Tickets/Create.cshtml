@@ -31,7 +31,7 @@
                     <label asp-for="Title" class="control-label"></label>
                 </div>
                 <div class="col">
-                    <input asp-for="Title" class="form-control" placeholder="Short (less than 50 characters) but meaningful" />
+                    <input asp-for="Title" class="form-control" />
                     <span asp-validation-for="Title" class="text-danger"></span>
                 </div>
             </div>
@@ -42,39 +42,39 @@
                     <label asp-for="Description" class="control-label"></label>
                 </div>
                 <div class="col">
-                    <textarea placeholder="As a <type of user>, I would like to go to <url or page>, and see <blank>, so that <blank>" asp-for="Description" class="form-control"></textarea>
+                    <textarea asp-for="Description" class="form-control"></textarea>
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
             </div>
-            <br>
-            
+            <br>   
+
             <div class="row">
                 <div class="col-2">
                     <label asp-for="ProjectId" class="control-label"></label>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <select asp-for="ProjectId" class ="form-control" asp-items="ViewBag.ProjectId"></select>
                     <span asp-validation-for="ProjectId" class="text-danger"></span>
                 </div>
             </div>
             <br>
-            
+
             <div class="row">
                 <div class="col-2">
                     <label asp-for="TicketTypeId" class="control-label"></label>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <select asp-for="TicketTypeId" class ="form-control" asp-items="ViewBag.TicketTypeId"></select>
                     <span asp-validation-for="TicketTypeId" class="text-danger"></span>
                 </div>
             </div>
-            <br>
+            <br>         
             
             <div class="row">
                 <div class="col-2">
                     <label asp-for="TicketPriorityId" class="control-label"></label>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <select asp-for="TicketPriorityId" class ="form-control" asp-items="ViewBag.TicketPriorityId"></select>
                     <span asp-validation-for="TicketPriorityId" class="text-danger"></span>
                 </div>
@@ -85,7 +85,7 @@
                 <div class="col-2">
                     <label asp-for="DeveloperUserId" class="control-label"></label>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <select asp-for="DeveloperUserId" class ="form-control" asp-items="ViewBag.DeveloperUserId"></select>
                     <span asp-validation-for="DeveloperUserId" class="text-danger"></span>
                 </div>
