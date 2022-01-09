@@ -42,24 +42,20 @@ namespace TheBugTracker.Controllers
         
         public async Task<IActionResult> Profile(string id)
         {
+            var tickets = await _context.Tickets
+                .Include(x => x.OwnerUser)
+                .Include(x => x.DeveloperUser)
+                .Include(x => x.Project)
+                .Include(x => x.TicketType)
+                .Include(x => x.TicketStatus)
+                .Include(x => x.TicketPriority)
+                .ToListAsync();
+
             ProfileViewModel vm = new();
+            vm.TicketsSubmitted = tickets.Where(t => t.OwnerUserId == id).ToList();
+            vm.TicketsAssigned = tickets.Where(t => t.DeveloperUserId == id).ToList();
             vm.User = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
-            vm.TicketsSubmitted = await _context.Tickets
-                .Where(t => t.OwnerUserId == id)
-                .Include(x => x.Project)
-                .Include(x => x.TicketType)
-                .Include(x => x.TicketStatus)
-                .Include(x => x.TicketPriority)
-                .ToListAsync();
-
-            vm.TicketsAssigned = await _context.Tickets
-                .Where(t => t.DeveloperUserId == id)
-                .Include(x => x.Project)
-                .Include(x => x.TicketType)
-                .Include(x => x.TicketStatus)
-                .Include(x => x.TicketPriority)
-                .ToListAsync();
             return View(vm);
         }
     }
