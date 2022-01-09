@@ -688,7 +688,7 @@ namespace TheBugTracker.Services
                         Email = root.results[0].email,
                         FirstName = root.results[0].name.first,
                         LastName = root.results[0].name.last,
-                        AvatarFileName = root.results[0].picture.thumbnail,
+                        AvatarFileName = root.results[0].picture.large,
                         EmailConfirmed = true,
                         PhoneNumber = "123-456-7890",
                         PhoneNumberConfirmed = true,

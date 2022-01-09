@@ -1,101 +1,102 @@
-﻿<div class="row">
-    <div class="col p-0 mx-5">
+﻿@model IEnumerable<Ticket>
+
+<div class="row">
+    <div class="col">
         <h1>Dashboard</h1>
         <hr>
     </div>
 </div>
 
 <div class="row">
-    <div class="col p-0 ml-5">
+    <div class="col">
         <a asp-controller="Tickets" asp-action="Create" class="btn btn-primary">Create new ticket</a>
     </div>
 </div>
 
-<br>
-
-<div class="row justify-content-around">
-    <div class="col-sm mx-5 px-5 py-3 border rounded">
-        <h4>Tickets by Type</h2>
-        <canvas id="ticketTypesDoughnutChart"></canvas>
+@if(Model.Count() > 0)
+{
+    <div class="row">
+        <div class="col m-3 p-3 border rounded">
+            <h4>Tickets by Type</h4>
+            <canvas id="ticketTypesDoughnutChart"></canvas>
+        </div>
+        <div class="col m-3 p-3 border rounded">
+            <h4>Tickets by Status</h4>
+            <canvas id="ticketStatusesDoughnutChart"></canvas>
+        </div>
+        <div class="col m-3 p-3 border rounded">
+            <h4>Tickets by Priority</h4>
+            <canvas id="ticketPrioritiesDoughnutChart"></canvas>
+        </div>
     </div>
-    
-    <div class="col-sm px-5 py-3 border rounded">
-        <h4>Tickets by Status</h2>
-        <canvas id="ticketStatusesDoughnutChart"></canvas>
-    </div>
-    
-    <div class="col-sm mx-5 px-5 py-3 border rounded">
-        <h4>Tickets by Priority</h2>
-        <canvas id="ticketPrioritiesDoughnutChart"></canvas>
-    </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<script>
-    fetch("/Chart/TicketTypes").then(r => r.json()).then(d => {
-        const labels = Object.keys(d)
-        let colors = []
-        labels.forEach((x, i) => colors.push(`rgba(255, 0, 0, ${(i + 1) / 10})`))
-        const data = {
-            labels: labels,
-            datasets: [{
-                data: Object.values(d),
-                backgroundColor: colors
-            }]
-        };
-        const config = {
-            type: 'doughnut',
-            data: data,
-            options: {}
-        };
-        const myChart = new Chart(
-            document.getElementById('ticketTypesDoughnutChart'),
-            config
-        );
-    })
-    
-    fetch("/Chart/TicketStatuses").then(r => r.json()).then(d => {
-        const labels = Object.keys(d)
-        let colors = []
-        labels.forEach((x, i) => colors.push(`rgba(0, 255, 0, ${(i + 1) / 10})`))
-        const data = {
-            labels: labels,
-            datasets: [{
-                data: Object.values(d),
-                backgroundColor: colors
-            }]
-        };
-        const config = {
-            type: 'doughnut',
-            data: data,
-            options: {}
-        };
-        const myChart = new Chart(
-            document.getElementById('ticketStatusesDoughnutChart'),
-            config
-        );
-    })
-    
-    fetch("/Chart/TicketPriorities").then(r => r.json()).then(d => {
-        const labels = Object.keys(d)
-        let colors = []
-        labels.forEach((x, i) => colors.push(`rgba(0, 0, 255, ${(i + 1) / 10})`))
-        const data = {
-            labels: labels,
-            datasets: [{
-                data: Object.values(d),
-                backgroundColor: colors
-            }]
-        };
-        const config = {
-            type: 'doughnut',
-            data: data,
-            options: {}
-        };
-        const myChart = new Chart(
-            document.getElementById('ticketPrioritiesDoughnutChart'),
-            config
-        );
-    })
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        fetch("/Chart/TicketTypes").then(r => r.json()).then(d => {
+            const labels = Object.keys(d)
+            let colors = []
+            labels.forEach((x, i) => colors.push(`rgba(255, 0, 0, ${(i + 1) / 10})`))
+            const data = {
+                labels: labels,
+                datasets: [{
+                    data: Object.values(d),
+                    backgroundColor: colors
+                }]
+            };
+            const config = {
+                type: 'doughnut',
+                data: data,
+                options: {}
+            };
+            const myChart = new Chart(
+                document.getElementById('ticketTypesDoughnutChart'),
+                config
+            );
+        })
+
+        fetch("/Chart/TicketStatuses").then(r => r.json()).then(d => {
+            const labels = Object.keys(d)
+            let colors = []
+            labels.forEach((x, i) => colors.push(`rgba(0, 255, 0, ${(i + 1) / 10})`))
+            const data = {
+                labels: labels,
+                datasets: [{
+                    data: Object.values(d),
+                    backgroundColor: colors
+                }]
+            };
+            const config = {
+                type: 'doughnut',
+                data: data,
+                options: {}
+            };
+            const myChart = new Chart(
+                document.getElementById('ticketStatusesDoughnutChart'),
+                config
+            );
+        })
+
+        fetch("/Chart/TicketPriorities").then(r => r.json()).then(d => {
+            const labels = Object.keys(d)
+            let colors = []
+            labels.forEach((x, i) => colors.push(`rgba(0, 0, 255, ${(i + 1) / 10})`))
+            const data = {
+                labels: labels,
+                datasets: [{
+                    data: Object.values(d),
+                    backgroundColor: colors
+                }]
+            };
+            const config = {
+                type: 'doughnut',
+                data: data,
+                options: {}
+            };
+            const myChart = new Chart(
+                document.getElementById('ticketPrioritiesDoughnutChart'),
+                config
+            );
+        })
+    </script>
+}

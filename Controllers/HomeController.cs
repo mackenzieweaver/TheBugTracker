@@ -43,9 +43,9 @@ namespace TheBugTracker.Controllers
             // _projectService = projectService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {            
-            return View();
+            return View(await _context.Tickets.ToListAsync());
         }
 
         public IActionResult Privacy()
@@ -63,19 +63,6 @@ namespace TheBugTracker.Controllers
         {
             List<BTUser> model = await _context.Users.ToListAsync();
             return View("Users", model);
-        }
-
-        public async Task<IActionResult> SeedUsers([FromQuery] int number = defaultSeedNumber)
-        {
-            await _seedService.SeedUsers(number);
-            List<BTUser> model = await _context.Users.ToListAsync();
-            return View("Users", model);
-        }
-        
-        public async Task<IActionResult> UnseedUsers()
-        {
-            await _seedService.UnseedUsers();
-            return View("Users", new List<BTUser>());
         }
         
         public async Task<IActionResult> SeedCompanies([FromQuery] int number = defaultSeedNumber)

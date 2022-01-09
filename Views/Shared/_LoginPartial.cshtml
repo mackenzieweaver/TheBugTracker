@@ -14,15 +14,21 @@
     @if (SignInManager.IsSignedIn(User))
     {
         <li class="nav-item">
-            <a class="nav-link text-dark pt-0 pb-0" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
-                <img style="border-radius: 50%" src="@user.AvatarFileName" alt="">
-                <span class="ml-2">
-                    @user.FullName,
-                </span>
-                <form style="display: inline;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                    <input value="Logout" type="submit" class="btn text-dark underlinep p-0" style="text-decoration: underline; margin-bottom: 6px;" />
-                </form>
-            </a>
+                <div class="row">
+                    <div class="col-auto p-0 pl-3">
+                        <a class="nav-link text-dark pt-0 pb-0" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                            <img style="border-radius: 50%; height: 75px;" src="@user.AvatarFileName" alt="" class="">
+                        </a>
+                    </div>
+                    <div class="col p-0">
+                        <a class="nav-link text-dark p-0" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                            <p class="m-0">@user.FullName,</p>
+                        </a>
+                        <form style="display: inline;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <input value="Logout" type="submit" class="btn text-dark underlinep p-0" style="text-decoration: underline; margin-bottom: 6px;" />
+                        </form>
+                    </div>
+                </div>
             <hr>
         </li>
     }

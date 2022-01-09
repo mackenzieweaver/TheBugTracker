@@ -1,0 +1,128 @@
+@model ProfileViewModel
+@using TheBugTracker.Models
+
+<div id="banner" class="row mb-5">
+    <div class="col-2 p-3">
+        <img class="w-100" src="@Model.User.AvatarFileName" alt="" />            
+    </div>
+    <div class="col p-3">
+        <h4>@Model.User.FullName</h4>
+        <h5>Contact</h4>
+        <p>@Model.User.Email</p>
+        <p>@Model.User.PhoneNumber</p>
+    </div>
+</div>
+
+@if(Model.TicketsAssigned.Count > 0)
+{
+    <div>
+        <h4>Tickets Assigned</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Project</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Developer</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.TicketsAssigned.OrderByDescending(x => x.Created)) {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Id)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Project.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketType.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketPriority.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketStatus.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.OwnerUser.FullName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DeveloperUser.FullName)
+                        </td>
+                        <td>
+                            <a asp-controller="Tickets" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if(Model.TicketsSubmitted.Count > 0)
+{
+    <div>
+        <h4>Tickets Submitted</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Title</th>
+                    <th>Project</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Developer</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.TicketsSubmitted.OrderByDescending(x => x.Created)) {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Id)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Title)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Project.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketType.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketPriority.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.TicketStatus.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.OwnerUser.FullName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DeveloperUser.FullName)
+                        </td>
+                        <td>
+                            <a asp-controller="Tickets" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<script>
+    let banner = document.getElementById("banner")
+    banner.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`
+</script>
