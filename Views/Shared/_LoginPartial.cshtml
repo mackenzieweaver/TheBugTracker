@@ -15,13 +15,13 @@
     {
         <li class="nav-item">
                 <div class="row">
-                    <div class="col-auto p-0 pl-3">
-                        <a class="nav-link text-dark pt-0 pb-0" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                    <div class="col-4 p-0 pl-3">
+                        <a asp-controller="Users" asp-action="Profile" asp-route-id="@user.Id">
                             <img style="border-radius: 50%; height: 75px;" src="@user.AvatarFileName" alt="" class="">
                         </a>
                     </div>
                     <div class="col p-0">
-                        <a class="nav-link text-dark p-0" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                        <a asp-controller="Users" asp-action="Profile" asp-route-id="@user.Id" class="nav-link text-dark p-0">
                             <p class="m-0">@user.FullName,</p>
                         </a>
                         <form style="display: inline;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">

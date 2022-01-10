@@ -272,6 +272,9 @@ namespace TheBugTracker.Services
             string url = "https://catalog.data.gov" + ticketUrl;
             HtmlDocument doc = web.Load(url);
             var nodes = doc.DocumentNode.Descendants("a");
+            var metadata = doc.DocumentNode
+                .SelectSingleNode("//*[@id='dataset-metadata-source']/ul/li/p/a")
+                .GetAttributeValue("href", "");
             List<string> attachments = nodes.Select(node => node.GetAttributeValue("href", ""))
                 .Where(href => href.Contains(".pdf") || href.Contains(".png") || href.Contains(".jpg")).ToList();
 
@@ -322,11 +325,7 @@ namespace TheBugTracker.Services
             }
             await _context.SaveChangesAsync();
 
-            var metadata = doc.DocumentNode
-                .SelectSingleNode("//*[@id='dataset-metadata-source']/ul/li/p/a")
-                .GetAttributeValue("href", "");                
             if(metadata is null) return;
-
             uri = new Uri("https://catalog.data.gov" + metadata);
             index = uri.Segments.Count() - 1;
             filename = uri.Segments[index] + ".json";

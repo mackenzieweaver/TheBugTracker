@@ -1,15 +1,28 @@
 @model ProfileViewModel
 @using TheBugTracker.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<BTUser> _userManager
 
-<div id="banner" class="row mb-3">
+@{
+    var user = await _userManager.GetUserAsync(User);
+}
+
+<div class="row mb-3 bg-light" style="position: relative; top: -15px;">
     <div class="col-2 p-3">
-        <img class="w-100" src="@Model.User.AvatarFileName" alt="" />            
+        <img class="w-100" src="@Model.User.AvatarFileName" alt="" />
     </div>
     <div class="col p-3">
         <h4>@Model.User.FullName</h4>
         <h5>Contact</h4>
         <p>@Model.User.Email</p>
         <p>@Model.User.PhoneNumber</p>
+        @if(user != null)
+        {
+            @if(Model.User.Id == user.Id)
+            {
+                <a class="btn btn-outline-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Manage account</a>
+            }
+        } 
     </div>
 </div>
 
@@ -122,8 +135,3 @@
         </table>
     </div>
 }
-
-<script>
-    let banner = document.getElementById("banner")
-    banner.style.backgroundColor = `rgb(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255})`
-</script>
