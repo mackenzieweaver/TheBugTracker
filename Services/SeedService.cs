@@ -226,9 +226,17 @@ namespace TheBugTracker.Services
                 var image = nodes[i].ChildNodes[1].ChildNodes[1].ChildNodes[0].Attributes[2].Value;
 
                 bool shouldHaveCompany = (new Random()).Next(0, 10) > 5 ? true : false;
-                List<int> companyIds = companyIds = await _context.Companies.Select(c => c.Id).ToListAsync();
+                List<int> companyIds = await _context.Companies.Select(c => c.Id).ToListAsync();
                 if(companyIds is null || companyIds.Count == 0) shouldHaveCompany = false;
+
                 var startDate = DateTime.Now.AddDays((new Random()).Next(0, 365));
+
+                List<int> projectPriorityIds = await _context.ProjectPriorities.Select(x => x.Id).ToListAsync();
+                if(projectPriorityIds is null || projectPriorityIds.Count == 0) 
+                {
+                    await SeedProjectPriorities();
+                    projectPriorityIds = await _context.ProjectPriorities.Select(x => x.Id).ToListAsync();
+                }
 
                 Project project = new()
                 {
@@ -237,7 +245,8 @@ namespace TheBugTracker.Services
                     ImageFileName = image,
                     CompanyId = shouldHaveCompany ? companyIds[(new Random()).Next(0, companyIds.Count)] : null,
                     StartDate = startDate,
-                    EndDate = startDate.AddDays((new Random()).Next(0, 30))
+                    EndDate = startDate.AddDays((new Random()).Next(0, 30)),
+                    ProjectPriorityId = projectPriorityIds[(new Random()).Next(0, projectPriorityIds.Count)]
                 };
                 await _context.AddAsync(project);
             }
@@ -365,7 +374,7 @@ namespace TheBugTracker.Services
             StandardApiResponse resp = deepAi.callStandardApi("text-generator", new { text = words[0] + words[1] + words[2] });
             var json = deepAi.objectAsJsonString(resp);
 
-            var deepAiResponse = JsonSerializer.Deserialize<DeepAiResponse>(json);            
+            var deepAiResponse = JsonSerializer.Deserialize<DeepAiResponse>(json);
             var sentences = deepAiResponse.output.Replace(@"\\n", " ").Replace(@"\n", " ").Split(". ").ToList();
             sentences = sentences.Where(s => s.Split().Count() > 25).ToList();
 
@@ -694,6 +703,10 @@ namespace TheBugTracker.Services
                         LockoutEnabled = false
                     };
                     var result = await _userManager.CreateAsync(user, seededUserPassword);
+
+                    var companyIds = await _context.Companies.Select(x => x.Id).ToListAsync();
+                    bool shouldHaveCompany = (new Random()).Next(0, 10) >= 5 ? true : false;
+                    if(shouldHaveCompany == true) user.CompanyId = companyIds[(new Random()).Next(0, companyIds.Count)];
                 }
                 catch (Exception ex)
                 {

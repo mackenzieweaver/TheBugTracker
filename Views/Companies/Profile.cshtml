@@ -1,0 +1,51 @@
+@model CompanyProfileViewModel
+
+<h1>@Model.Company.Name</h1>
+<hr>
+<div class="row">
+    <div class="col">
+        <h4>About</h4>
+        <hr>
+        @Html.Raw(Model.Company.Description)
+    </div>
+    <div class="col">
+        <h4>Projects</h4>
+        <hr>
+        @foreach (var project in Model.Projects)
+        {
+            <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="text-dark text-decoration-none">
+                <div class="row">
+                    <div class="col-auto">
+                        <img src="@project.ImageFileName" alt="" />
+                    </div>
+                    <div class="col">
+                        <h5>@project.Name</h5>
+                        <p>@project.Description</p>
+                        <p>Priority: @project.ProjectPriority.Name</p>
+                    </div>
+                </div>
+            </a>
+            <br>
+        }
+    </div>
+    <div class="col">
+        <h4>Members</h4>
+        <hr>
+        @foreach (var member in Model.Members)
+        {
+            <a asp-controller="Users" asp-action="Profile" asp-route-id="@member.Id" class="text-dark text-decoration-none">
+                <div class="row">
+                    <div class="col-auto">
+                        <img src="@member.AvatarFileName" alt="" />
+                    </div>
+                    <div class="col">
+                        <h5>@member.FullName</h5>
+                        <p>@member.Email</p>
+                        <p>@member.PhoneNumber</p>
+                    </div>
+                </div>
+            </a>
+            <br>
+        }
+    </div>
+</div>

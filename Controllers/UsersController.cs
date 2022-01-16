@@ -51,7 +51,7 @@ namespace TheBugTracker.Controllers
                 .Include(x => x.TicketPriority)
                 .ToListAsync();
 
-            ProfileViewModel vm = new();
+            UserProfileViewModel vm = new();
             vm.TicketsSubmitted = tickets.Where(t => t.OwnerUserId == id).ToList();
             vm.TicketsAssigned = tickets.Where(t => t.DeveloperUserId == id).ToList();
             vm.User = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);

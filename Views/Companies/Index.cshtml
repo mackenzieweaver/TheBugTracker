@@ -4,6 +4,15 @@
     ViewData["Title"] = "Index";
 }
 
+<style>
+    tr {
+        cursor: pointer;
+    }
+    thead{
+        cursor: auto;
+    }
+</style>
+
 <h1>Companies (@Model.Count())</h1>
 <a class="btn btn-primary" asp-controller="Home" asp-action="SeedCompanies">Seed</a>        
 <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedCompanies">Unseed</a>  
@@ -24,12 +33,9 @@
     </thead>
     <tbody>
 @foreach (var item in Model) {
-        <tr>
+        <tr id="@item.Id">
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
@@ -40,3 +46,17 @@
 }
     </tbody>
 </table>
+
+<script>
+    $(document).ready(() => {
+        let collection = document.getElementsByTagName("tr")
+        let rows = Array.from(collection);
+        rows.shift()
+
+        rows.forEach(row => {
+            row.addEventListener('click', e => {
+                window.location = `/Companies/Profile/${row.id}`
+            })
+        })
+    })
+</script>

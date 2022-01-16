@@ -7,22 +7,34 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTCompanyInfoService _companyInfoService;
 
-        public CompaniesController(ApplicationDbContext context)
+        public CompaniesController(ApplicationDbContext context, IBTCompanyInfoService companyInfoService)
         {
             _context = context;
+            _companyInfoService = companyInfoService;
         }
 
         // GET: Companies
         public async Task<IActionResult> Index()
         {
             return View(await _context.Companies.ToListAsync());
+        }
+
+        public async Task<IActionResult> Profile(int id)
+        {
+            var company = await _context.Companies
+                .Include(x => x.Members)
+                .Include(x => x.Projects).ThenInclude(x => x.ProjectPriority)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            return View(new CompanyProfileViewModel { Company = company, Members = company.Members, Projects = company.Projects });
         }
 
         // GET: Companies/Details/5
