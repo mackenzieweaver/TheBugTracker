@@ -22,8 +22,12 @@ namespace TheBugTracker.Controllers
         // GET: Projects
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Projects.Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
+            var projects = await _context.Projects
+                .Include(p => p.Tickets)
+                .Include(p => p.Company)
+                .Include(p => p.ProjectPriority)
+                .ToListAsync();
+            return View(projects);
         }
 
         // GET: Projects/Details/5
@@ -36,6 +40,10 @@ namespace TheBugTracker.Controllers
 
             var project = await _context.Projects
                 .Include(p => p.Company)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketType)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketStatus)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketPriority)
+                .Include(p => p.Members)
                 .Include(p => p.ProjectPriority)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (project == null)

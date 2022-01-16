@@ -706,7 +706,12 @@ namespace TheBugTracker.Services
 
                     var companyIds = await _context.Companies.Select(x => x.Id).ToListAsync();
                     bool shouldHaveCompany = (new Random()).Next(0, 10) >= 5 ? true : false;
-                    if(shouldHaveCompany == true) user.CompanyId = companyIds[(new Random()).Next(0, companyIds.Count)];
+                    if(shouldHaveCompany == true) 
+                    {
+                        user.CompanyId = companyIds[(new Random()).Next(0, companyIds.Count)];
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                    }
                 }
                 catch (Exception ex)
                 {

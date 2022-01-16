@@ -25,7 +25,11 @@ namespace TheBugTracker.Controllers
         // GET: Companies
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Companies.ToListAsync());
+            var companies = await _context.Companies
+                .Include(x => x.Projects)
+                .Include(x => x.Members)
+                .ToListAsync();
+            return View(companies);
         }
 
         public async Task<IActionResult> Profile(int id)
