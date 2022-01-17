@@ -5,8 +5,12 @@
 }
 
 <h1>Projects (@Model.Count())</h1>
-<a class="btn btn-primary" asp-controller="Home" asp-action="SeedProjects">Seed</a>     
-<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedProjects">Unseed</a>
+<select id="actions">
+    <option style="display: none;">Actions</option>
+    <option value="/ProjectPriorities">Edit Priorities</option>
+    <option value="/Home/SeedProjects">Seed More Projects</option>
+    <option value="/Home/UnseedProjects">Unseed Projects</option>
+</select>
 <p><em>Seed data from <a href="https://github.com/marketplace?type=apps" target="_blank">github</a></em></p>
 
 <p><a asp-action="Create">Create New</a></p>
@@ -92,3 +96,10 @@
 }
     </tbody>
 </table>
+
+<script>
+    const actions = document.getElementById("actions")
+    actions.addEventListener('change', (e) => {
+        window.location = e.target.value
+    })
+</script>

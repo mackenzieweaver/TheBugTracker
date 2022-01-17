@@ -164,13 +164,13 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> SeedTicketHistories([FromQuery] int number = defaultSeedNumber)
         {
             await _seedService.SeedTicketHistories(number);
-            return RedirectToAction("Index", "TicketHistories");
+            return RedirectToAction("Index", "Tickets");
         }
         
         public async Task<IActionResult> UnseedTicketHistories()
         {
             await _seedService.UnseedTicketHistories();
-            return RedirectToAction("Index", "TicketHistories");
+            return RedirectToAction("Index", "Tickets");
         }
     }
 }
