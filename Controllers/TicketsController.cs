@@ -8,16 +8,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTTicketHistoryService _historyService;
 
-        public TicketsController(ApplicationDbContext context)
+        public TicketsController(ApplicationDbContext context, IBTTicketHistoryService historyService)
         {
             _context = context;
+            _historyService = historyService;
         }
 
         // GET: Tickets
@@ -82,69 +85,7 @@ namespace TheBugTracker.Controllers
             {
                 _context.Add(ticket);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.DeveloperUserId);
-            ViewData["OwnerUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.OwnerUserId);
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
-            ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Id", ticket.TicketPriorityId);
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id", ticket.TicketStatusId);
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Id", ticket.TicketTypeId);
-            return View(ticket);
-        }
-
-        // GET: Tickets/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticket = await _context.Tickets.FindAsync(id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-            ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.DeveloperUserId);
-            ViewData["OwnerUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.OwnerUserId);
-            ViewData["ProjectId"] = new SelectList(_context.Projects, "Id", "Name", ticket.ProjectId);
-            ViewData["TicketPriorityId"] = new SelectList(_context.TicketPriorities, "Id", "Id", ticket.TicketPriorityId);
-            ViewData["TicketStatusId"] = new SelectList(_context.TicketStatuses, "Id", "Id", ticket.TicketStatusId);
-            ViewData["TicketTypeId"] = new SelectList(_context.TicketTypes, "Id", "Id", ticket.TicketTypeId);
-            return View(ticket);
-        }
-
-        // POST: Tickets/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Description,Created,Updated,Archived,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,OwnerUserId,DeveloperUserId")] Ticket ticket)
-        {
-            if (id != ticket.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(ticket);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TicketExists(ticket.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                await _historyService.AddHistoryAsync(null, ticket, ticket.OwnerUserId);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "Id", ticket.DeveloperUserId);
@@ -161,10 +102,67 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> EditDeveloper(string id, int ticketId)
         {
             var ticket = await _context.Tickets.FindAsync(ticketId);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+
             ticket.DeveloperUserId = id;
+            ticket.Updated = DateTime.Now;
             _context.Tickets.Update(ticket);
             await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
             return RedirectToAction("Details", "Tickets", new { id = ticketId });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDescription(int id, string description)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+
+            ticket.Description = description;
+            ticket.Updated = DateTime.Now;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+            
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditTitle(int id, string title)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+            
+            ticket.Title = title;
+            ticket.Updated = DateTime.Now;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditArchived(int id, bool archive)
+        {
+            var ticket = await _context.Tickets.FindAsync(id);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+            
+            ticket.Archived = archive;
+            ticket.Updated = DateTime.Now;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = id });
         }
 
         // GET: Tickets/Delete/5

@@ -5,8 +5,9 @@
 }
 
 <h1>Tickets (@Model.Count())</h1>
-<a class="btn btn-primary" asp-controller="Home" asp-action="SeedTickets">Seed</a>        
-<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTickets">Unseed</a>
+<a class="btn btn-primary" asp-controller="Home" asp-action="SeedTickets">Seed More Tickets</a>
+<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTickets">Unseed All Tickets</a>
+<a class="btn btn-primary" asp-controller="TicketHistories" asp-action="SeedTickets">Seed More Tickets</a>
 <p><em>Seed data from <a href="https://catalog.data.gov/dataset" target="_blank">data.gov</a></em></p>
 
 <p><a asp-action="Create">Create New</a></p>

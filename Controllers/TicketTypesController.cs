@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
     public class TicketTypesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTTicketHistoryService _historyService;
 
-        public TicketTypesController(ApplicationDbContext context)
+        public TicketTypesController(ApplicationDbContext context, IBTTicketHistoryService historyService)
         {
             _context = context;
+            _historyService = historyService;
         }
 
         // GET: TicketTypes
@@ -89,9 +92,14 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> Edit(int id, int ticketId)
         {
             var ticket = await _context.Tickets.FindAsync(ticketId);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+
             ticket.TicketTypeId = id;
             _context.Tickets.Update(ticket);
             await _context.SaveChangesAsync();
+            
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
             return RedirectToAction("Details", "Tickets", new { id = ticketId });
         }
 

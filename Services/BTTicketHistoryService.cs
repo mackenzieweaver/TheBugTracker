@@ -21,6 +21,18 @@ namespace TheBugTracker.Services
             _ticketService = ticketService;
         }
 
+        public Ticket DeepCopyTicket(Ticket ticket)
+        {
+            var oldTicket = new Ticket();
+            Type type = oldTicket.GetType();
+            foreach(var prop in type.GetProperties())
+            {
+                var val = prop.GetValue(ticket);
+                prop.SetValue(oldTicket, val);
+            }
+            return oldTicket;
+        }
+
         public async Task AddHistoryAsync(Ticket oldticket, Ticket newticket, string userId)
         {
             if(oldticket is null && newticket is not null)

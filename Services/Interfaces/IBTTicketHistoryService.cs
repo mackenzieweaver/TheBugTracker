@@ -6,6 +6,7 @@ namespace TheBugTracker.Services.Interfaces
 {
     public interface IBTTicketHistoryService
     {
+        Ticket DeepCopyTicket(Ticket ticket);
         Task AddHistoryAsync(Ticket oldticket, Ticket newticket, string userId);
         Task<List<TicketHistory>> GetProjectTicketsHistoriesAsync(int projectId);
         Task<List<TicketHistory>> GetCompanyTicketsHistoriesAsync(int companyId);
