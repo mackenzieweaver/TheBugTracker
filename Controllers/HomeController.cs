@@ -16,41 +16,21 @@ namespace TheBugTracker.Controllers
     public class HomeController : Controller
     {
         private const int defaultSeedNumber = 5;
-        private readonly ILogger<HomeController> _logger;
+        
         private readonly IBTFileService _fileService;
         private readonly ISeedService _seedService;
-
-        // private readonly IBTTicketHistoryService _historyService;
         private readonly ApplicationDbContext _context;
-        // private readonly IBTTicketService _ticketService;
-        // private readonly IBTProjectService _projectService;
 
-        public HomeController(ILogger<HomeController> logger,
-            // IBTTicketHistoryService historyService, 
-            ApplicationDbContext context, 
-            // IBTTicketService ticketService,
-            // IBTProjectService projectService
-            IBTFileService fileService,
-            ISeedService seedService
-        )
+        public HomeController(ApplicationDbContext context,IBTFileService fileService,ISeedService seedService)
         {
-            _logger = logger;
             _fileService = fileService;
             _seedService = seedService;
-            // _historyService = historyService;
             _context = context;
-            // _ticketService = ticketService;
-            // _projectService = projectService;
         }
 
         public async Task<IActionResult> Index()
         {            
             return View(await _context.Tickets.ToListAsync());
-        }
-
-        public IActionResult Privacy()
-        {
-            return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

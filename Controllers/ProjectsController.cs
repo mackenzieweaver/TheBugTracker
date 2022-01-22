@@ -32,6 +32,16 @@ namespace TheBugTracker.Controllers
                 projects = projects.Where(project => project.CompanyId == user.CompanyId).ToList();
             return View(projects);
         }
+        
+        public async Task<IActionResult> AddTicketToProject(int projectId)
+        {
+            var tickets = await _context.Tickets.Where(x => x.ProjectId != projectId).ToListAsync();
+            var r = (new Random()).Next(0, tickets.Count);
+            tickets[r].ProjectId = projectId;
+            _context.Update(tickets[r]);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = projectId });
+        }
 
         // GET: Projects/Details/5
         public async Task<IActionResult> Details(int id)
