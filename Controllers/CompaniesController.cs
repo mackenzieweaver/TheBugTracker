@@ -34,11 +34,36 @@ namespace TheBugTracker.Controllers
 
         public async Task<IActionResult> Profile(int id)
         {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) if(user.CompanyId != id) return NotFound();
+
             var company = await _context.Companies
                 .Include(x => x.Members)
                 .Include(x => x.Projects).ThenInclude(x => x.ProjectPriority)
                 .FirstOrDefaultAsync(x => x.Id == id);
             return View(new CompanyProfileViewModel { Company = company, Members = company.Members, Projects = company.Projects });
+        }
+
+        public async Task<IActionResult> AddProjectToCompany(int companyId)
+        {
+            var projects = await _context.Projects.Where(p => p.CompanyId == null).ToListAsync();
+            if (projects.Count == 0) return StatusCode(500);
+            var project = projects[(new Random()).Next(0, projects.Count)];
+            project.CompanyId = companyId;
+            _context.Update(project);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Profile", new { id = companyId });
+        }
+        
+        public async Task<IActionResult> AddMemberToCompany(int companyId)
+        {
+            var users = await _context.Users.Where(u => u.CompanyId == null).ToListAsync();
+            if (users.Count == 0) return StatusCode(500);
+            var user = users[(new Random()).Next(0, users.Count)];
+            user.CompanyId = companyId;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Profile", new { id = companyId });
         }
 
         // GET: Companies/Details/5

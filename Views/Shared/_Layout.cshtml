@@ -1,4 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
+@inject UserManager<BTUser> _userManager
+
+@{
+    var user = await _userManager.GetUserAsync(User);
+}
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,7 +21,7 @@
             max-width: 100%;
             overflow: auto;
         }
-        ::-webkit-scrollbar {
+        @* ::-webkit-scrollbar {
             width: 12px;
             height: 12px;
         }
@@ -28,7 +36,7 @@
             background: #FFFFFF;
             border: 4px solid #FFFFFF;
             border-radius: 13px;
-        }
+        } *@
     </style>
     <script src="https://kit.fontawesome.com/8b5ae67e5c.js" crossorigin="anonymous"></script>
 </head>
@@ -46,13 +54,24 @@
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                 <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="height: 100vh">
                     <li class="nav-item"><partial name="_LoginPartial" /></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Companies" asp-action="Index">Companies</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Projects" asp-action="Index">Projects</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Invites" asp-action="Index">Invites</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Users</a></li>
+                    @if(_signInManager.IsSignedIn(User))
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Companies" asp-action="Profile" asp-route-id="@user.CompanyId">
+                                Company
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li>
+                    }
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Invites" asp-action="Index">Invites</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a></li>
                 </ul>
             </div>
 

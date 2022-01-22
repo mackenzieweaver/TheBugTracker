@@ -36,12 +36,23 @@ namespace TheBugTracker.Controllers
 
         public async Task<IActionResult> Index()
         {
-            List<BTUser> model = await _context.Users.ToListAsync();
-            return View(model);
+            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            var users = currentUser is not null ? 
+                await _context.Users.Where(x => x.CompanyId == currentUser.CompanyId).ToListAsync() :
+                await _context.Users.ToListAsync();
+            return View(users);
         }
         
         public async Task<IActionResult> Profile(string id)
         {
+            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(currentUser is not null)
+            {
+                var company = await _context.Companies.Include(x => x.Members).FirstOrDefaultAsync(x => x.Id == currentUser.CompanyId);
+                if(company is null) return RedirectToAction(nameof(Index));
+                if(!company.Members.Select(x => x.Id).Contains(id)) return RedirectToAction(nameof(Index));
+            }
+
             var tickets = await _context.Tickets
                 .Include(x => x.OwnerUser)
                 .Include(x => x.DeveloperUser)

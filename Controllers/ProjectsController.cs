@@ -18,8 +18,7 @@ namespace TheBugTracker.Controllers
         {
             _context = context;
         }
-
-        // GET: Projects
+        
         public async Task<IActionResult> Index()
         {
             var projects = await _context.Projects
@@ -27,17 +26,16 @@ namespace TheBugTracker.Controllers
                 .Include(p => p.Company)
                 .Include(p => p.ProjectPriority)
                 .ToListAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) 
+                projects = projects.Where(project => project.CompanyId == user.CompanyId).ToList();
             return View(projects);
         }
 
         // GET: Projects/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var project = await _context.Projects
                 .Include(p => p.Company)
                 .Include(p => p.Tickets).ThenInclude(x => x.TicketType)
@@ -46,11 +44,10 @@ namespace TheBugTracker.Controllers
                 .Include(p => p.Members)
                 .Include(p => p.ProjectPriority)
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (project == null)
-            {
-                return NotFound();
-            }
 
+            if (project == null) return NotFound();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) if(project.CompanyId != user.CompanyId) return NotFound();
             return View(project);
         }
 
@@ -133,37 +130,6 @@ namespace TheBugTracker.Controllers
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
             return View(project);
-        }
-
-        // GET: Projects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (project == null)
-            {
-                return NotFound();
-            }
-
-            return View(project);
-        }
-
-        // POST: Projects/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var project = await _context.Projects.FindAsync(id);
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool ProjectExists(int id)

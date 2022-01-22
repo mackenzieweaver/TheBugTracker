@@ -26,18 +26,22 @@ namespace TheBugTracker.Controllers
         // GET: Tickets
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Tickets.Include(t => t.DeveloperUser).Include(t => t.OwnerUser).Include(t => t.Project).Include(t => t.TicketPriority).Include(t => t.TicketStatus).Include(t => t.TicketType);
-            return View(await applicationDbContext.ToListAsync());
+            var tickets = await _context.Tickets
+                .Include(t => t.DeveloperUser)
+                .Include(t => t.OwnerUser)
+                .Include(t => t.Project)
+                .Include(t => t.TicketPriority)
+                .Include(t => t.TicketStatus)
+                .Include(t => t.TicketType)
+                .ToListAsync();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) tickets = tickets.Where(ticket => ticket.Project.CompanyId == user.CompanyId).ToList();
+            return View(tickets);
         }
 
         // GET: Tickets/Details/5
-        public async Task<IActionResult> Details(int? id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var ticket = await _context.Tickets
                 .Include(t => t.DeveloperUser)
                 .Include(t => t.OwnerUser)
@@ -50,10 +54,15 @@ namespace TheBugTracker.Controllers
                 .Include(t => t.History).ThenInclude(x => x.User)
                 .FirstOrDefaultAsync(m => m.Id == id);
 
-            if (ticket == null)
+            if (ticket == null) return NotFound();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null)
             {
-                return NotFound();
+                var projects = await _context.Projects.ToListAsync();
+                var project = projects.FirstOrDefault(x => x.Id == ticket.ProjectId);
+                if(project.CompanyId != user.CompanyId) return NotFound();
             }
+
             ViewData["StatusList"] = new SelectList(_context.TicketStatuses.Where(x => x.Id != ticket.TicketStatusId), "Id", "Name");
             ViewData["PriorityList"] = new SelectList(_context.TicketPriorities.Where(x => x.Id != ticket.TicketPriorityId), "Id", "Name");
             ViewData["TypeList"] = new SelectList(_context.TicketTypes.Where(x => x.Id != ticket.TicketTypeId), "Id", "Name");
@@ -99,6 +108,7 @@ namespace TheBugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> EditDeveloper(string id, int ticketId)
         {
             var ticket = await _context.Tickets.FindAsync(ticketId);
@@ -116,6 +126,7 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> EditDescription(int id, string description)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -133,6 +144,7 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> EditTitle(int id, string title)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -150,6 +162,7 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> EditArchived(int id, bool archive)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -163,46 +176,6 @@ namespace TheBugTracker.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
             await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
             return RedirectToAction("Details", "Tickets", new { id = id });
-        }
-
-        // GET: Tickets/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticket = await _context.Tickets
-                .Include(t => t.DeveloperUser)
-                .Include(t => t.OwnerUser)
-                .Include(t => t.Project)
-                .Include(t => t.TicketPriority)
-                .Include(t => t.TicketStatus)
-                .Include(t => t.TicketType)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticket == null)
-            {
-                return NotFound();
-            }
-
-            return View(ticket);
-        }
-
-        // POST: Tickets/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var ticket = await _context.Tickets.FindAsync(id);
-            _context.Tickets.Remove(ticket);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool TicketExists(int id)
-        {
-            return _context.Tickets.Any(e => e.Id == id);
         }
     }
 }

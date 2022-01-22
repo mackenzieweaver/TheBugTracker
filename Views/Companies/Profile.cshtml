@@ -1,14 +1,26 @@
 @model CompanyProfileViewModel
-
+<style>
+    form{
+        display: inline;
+    }
+</style>
 <h1>@Model.Company.Name</h1>
+<form asp-action="AddProjectToCompany">
+    <input type="hidden" name="companyId" value="@Model.Company.Id">
+    <input type="submit" value="Add Project" class="btn btn-primary">
+</form>
+<form asp-action="AddMemberToCompany">
+    <input type="hidden" name="companyId" value="@Model.Company.Id">
+    <input type="submit" value="Add Member" class="btn btn-primary">
+</form>
 <hr>
 <div class="row">
-    <div class="col">
+    <div class="col seperateScroll">
         <h4>About</h4>
         <hr>
         @Html.Raw(Model.Company.Description)
     </div>
-    <div class="col">
+    <div class="col seperateScroll">
         <h4>Projects</h4>
         <hr>
         @foreach (var project in Model.Projects)
@@ -28,7 +40,7 @@
             <br>
         }
     </div>
-    <div class="col">
+    <div class="col seperateScroll">
         <h4>Members</h4>
         <hr>
         @foreach (var member in Model.Members)
