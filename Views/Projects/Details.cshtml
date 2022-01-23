@@ -13,6 +13,7 @@
     <div class="col">
         <h1>Project @Model.Name</h1>
         <h6>Priority: @Model.ProjectPriority.Name</h6>
+        <a asp-controller="Companies" asp-action="Profile" asp-route-id="@Model.CompanyId">@Model.Company.Name</a>
     </div>
 </div>
 <hr>
