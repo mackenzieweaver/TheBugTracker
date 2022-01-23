@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,6 +14,7 @@ using TheBugTracker.Services;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class InvitesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -24,14 +26,14 @@ namespace TheBugTracker.Controllers
             _context = context;
         }
 
-        // GET: Invites
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var applicationDbContext = _context.Invites.Include(i => i.Company).Include(i => i.Invitee).Include(i => i.Invitor).Include(i => i.Project);
             return View(await applicationDbContext.ToListAsync());
         }
 
-        // GET: Invites/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -53,7 +55,6 @@ namespace TheBugTracker.Controllers
             return View(invite);
         }
 
-        // GET: Invites/Create
         public async Task<IActionResult> Create()
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
@@ -64,7 +65,7 @@ namespace TheBugTracker.Controllers
             return View();
         }
         
-        public async Task<IActionResult> Accept()
+        public async Task<IActionResult> Accept(int inviteId)
         {
             // if user is signed in then sign them out
 
@@ -87,12 +88,11 @@ namespace TheBugTracker.Controllers
                 $"<a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Accept</a>."
             );
             
-            // _context.Add(invite);
-            // await _context.SaveChangesAsync();
+            _context.Add(invite);
+            await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Users");
         }
 
-        // GET: Invites/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -112,9 +112,6 @@ namespace TheBugTracker.Controllers
             return View(invite);
         }
 
-        // POST: Invites/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,InviteDate,JoinDate,CompanyToken,CompanyId,ProjectId,InvitorId,InviteeId,InviteeEmail,InviteeFirstName,InviteeLastName,IsValid")] Invite invite)
@@ -151,7 +148,6 @@ namespace TheBugTracker.Controllers
             return View(invite);
         }
 
-        // GET: Invites/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -173,7 +169,6 @@ namespace TheBugTracker.Controllers
             return View(invite);
         }
 
-        // POST: Invites/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)

@@ -12,6 +12,7 @@ using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class TicketsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,7 +24,7 @@ namespace TheBugTracker.Controllers
             _historyService = historyService;
         }
 
-        // GET: Tickets
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var tickets = await _context.Tickets
@@ -39,7 +40,7 @@ namespace TheBugTracker.Controllers
             return View(tickets);
         }
 
-        // GET: Tickets/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var ticket = await _context.Tickets
@@ -70,8 +71,6 @@ namespace TheBugTracker.Controllers
             return View(ticket);
         }
 
-        // GET: Tickets/Create
-        [Authorize]
         public async Task<IActionResult> Create()
         {
             ViewData["DeveloperUserId"] = new SelectList(_context.Users, "Id", "FullName");
@@ -83,9 +82,6 @@ namespace TheBugTracker.Controllers
             return View();
         }
 
-        // POST: Tickets/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Title,Description,Created,Updated,Archived,ProjectId,TicketTypeId,TicketStatusId,TicketPriorityId,OwnerUserId,DeveloperUserId")] Ticket ticket)
@@ -108,7 +104,6 @@ namespace TheBugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> EditDeveloper(string id, int ticketId)
         {
             var ticket = await _context.Tickets.FindAsync(ticketId);
@@ -126,7 +121,6 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> EditDescription(int id, string description)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -144,7 +138,6 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> EditTitle(int id, string title)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -162,7 +155,6 @@ namespace TheBugTracker.Controllers
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize]
         public async Task<IActionResult> EditArchived(int id, bool archive)
         {
             var ticket = await _context.Tickets.FindAsync(id);

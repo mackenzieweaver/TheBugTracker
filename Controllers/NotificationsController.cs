@@ -31,7 +31,6 @@ namespace TheBugTracker.Controllers
             return View(notifications);
         }
 
-        // GET: Notifications/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)

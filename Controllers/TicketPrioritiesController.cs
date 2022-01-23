@@ -49,6 +49,22 @@ namespace TheBugTracker.Controllers
             return View(ticketPriority);
         }        
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, int ticketId)
+        {
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+
+            ticket.TicketPriorityId = id;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
+        }
+
         // GET: TicketPriorities/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {

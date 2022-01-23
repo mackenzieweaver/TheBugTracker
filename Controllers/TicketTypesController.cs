@@ -48,6 +48,22 @@ namespace TheBugTracker.Controllers
             }
             return View(ticketType);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, int ticketId)
+        {
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
+
+            ticket.TicketTypeId = id;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
+        }
         
         // GET: TicketTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)

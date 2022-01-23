@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using TheBugTracker.Models;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -19,6 +21,7 @@ namespace TheBugTracker.Controllers
             _context = context;
         }
         
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var projects = await _context.Projects
@@ -33,6 +36,7 @@ namespace TheBugTracker.Controllers
             return View(projects);
         }
         
+        [AllowAnonymous]
         public async Task<IActionResult> AddTicketToProject(int projectId)
         {
             var tickets = await _context.Tickets.Where(x => x.ProjectId != projectId).ToListAsync();
@@ -43,7 +47,7 @@ namespace TheBugTracker.Controllers
             return RedirectToAction("Details", new { id = projectId });
         }
 
-        // GET: Projects/Details/5
+        [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
             var project = await _context.Projects
@@ -61,7 +65,6 @@ namespace TheBugTracker.Controllers
             return View(project);
         }
 
-        // GET: Projects/Create
         public IActionResult Create()
         {
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
@@ -69,9 +72,6 @@ namespace TheBugTracker.Controllers
             return View();
         }
 
-        // POST: Projects/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
@@ -87,7 +87,6 @@ namespace TheBugTracker.Controllers
             return View(project);
         }
 
-        // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -105,9 +104,6 @@ namespace TheBugTracker.Controllers
             return View(project);
         }
 
-        // POST: Projects/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
