@@ -6,20 +6,12 @@
     form{
         display: inline;
     }
+    hr.lesstop{
+        margin-top: calc(1rem - 8px);
+    }
 </style>
 
-<h1>@Model.Company.Name</h1>
-@if(!_signInManager.IsSignedIn(User))
-{
-    <form asp-action="AddProjectToCompany">
-        <input type="hidden" name="companyId" value="@Model.Company.Id">
-        <input type="submit" value="Add Project" class="btn btn-primary">
-    </form>
-    <form asp-action="AddMemberToCompany">
-        <input type="hidden" name="companyId" value="@Model.Company.Id">
-        <input type="submit" value="Add Member" class="btn btn-primary">
-    </form>
-}
+<h1>Company: @Model.Company.Name</h1>
 <hr>
 
 <div class="row">
@@ -29,8 +21,17 @@
         @Html.Raw(Model.Company.Description)
     </div>
     <div class="col seperateScroll">
-        <h4>Projects</h4>
-        <hr>
+        <div class="d-flex justify-content-between">
+            <h4>Projects</h4>
+            @if(!_signInManager.IsSignedIn(User))
+            {
+                <form asp-action="AddProjectToCompany">
+                    <input type="hidden" name="companyId" value="@Model.Company.Id">
+                    <input type="submit" value="Add Project" class="btn btn-sm btn-outline-primary">
+                </form>
+            }
+        </div>
+        <hr class="lesstop">
         @foreach (var project in Model.Projects)
         {
             <a asp-controller="Projects" asp-action="Details" asp-route-id="@project.Id" class="text-dark text-decoration-none">
@@ -49,8 +50,17 @@
         }
     </div>
     <div class="col seperateScroll">
-        <h4>Members</h4>
-        <hr>
+        <div class="d-flex justify-content-between">
+            <h4>Members</h4>
+            @if(!_signInManager.IsSignedIn(User))
+            {
+                <form asp-action="AddMemberToCompany">
+                    <input type="hidden" name="companyId" value="@Model.Company.Id">
+                    <input type="submit" value="Add Member" class="btn btn-sm btn-outline-primary">
+                </form>
+            }
+        </div>
+        <hr class="lesstop">
         @foreach (var member in Model.Members)
         {
             <a asp-controller="Users" asp-action="Profile" asp-route-id="@member.Id" class="text-dark text-decoration-none">

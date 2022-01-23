@@ -13,18 +13,22 @@
     <div class="col">
         <h1>Project @Model.Name</h1>
         <h6>Priority: @Model.ProjectPriority.Name</h6>
-        @if(!_signInManager.IsSignedIn(User))
-        {
-            <form asp-action="AddTicketToProject">
-                <input type="hidden" name="projectId" value="@Model.Id">
-                <input type="submit" value="Add Ticket" class="btn btn-primary">
-            </form>
-        }
     </div>
 </div>
 <hr>
 
-<h4>Tickets</h4>
+<div class="d-flex">
+    <h4>Tickets (@Model.Tickets.Count)</h4>
+
+    @if(!_signInManager.IsSignedIn(User))
+    {
+        <form asp-action="AddTicketToProject">
+            <input type="hidden" name="projectId" value="@Model.Id">
+            <input type="submit" value="Add Ticket" class="btn btn-sm btn-outline-primary ml-3">
+        </form>
+    }
+</div>
+
 <div class="row">
     @foreach (var ticket in Model.Tickets)
     {

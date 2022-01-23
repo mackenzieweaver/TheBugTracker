@@ -50,9 +50,13 @@ namespace TheBugTracker.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> AddProjectToCompany(int companyId)
         {
-            var projects = await _context.Projects.Where(p => p.CompanyId == null).ToListAsync();
-            if (projects.Count == 0) return StatusCode(500);
-            var project = projects[(new Random()).Next(0, projects.Count)];
+            var projects = await _context.Projects.ToListAsync();
+            var projectsWithoutCompany = projects.Where(p => p.CompanyId == null).ToList();
+            var projectsNotAlreadyInCompany = projects.Where(p => p.CompanyId != companyId).ToList();
+
+            var project = projectsWithoutCompany.Count > 0 ? projectsWithoutCompany[(new Random()).Next(0, projectsWithoutCompany.Count)] :
+                projectsNotAlreadyInCompany[(new Random()).Next(0, projectsNotAlreadyInCompany.Count)];
+
             project.CompanyId = companyId;
             _context.Update(project);
             await _context.SaveChangesAsync();
@@ -62,9 +66,13 @@ namespace TheBugTracker.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> AddMemberToCompany(int companyId)
         {
-            var users = await _context.Users.Where(u => u.CompanyId == null).ToListAsync();
-            if (users.Count == 0) return StatusCode(500);
-            var user = users[(new Random()).Next(0, users.Count)];
+            var users = await _context.Users.ToListAsync();
+            var usersWithoutCompany = users.Where(u => u.CompanyId == null).ToList();
+            var usersNotAlreadyInCompany = users.Where(u => u.CompanyId != companyId).ToList();
+            
+            var user = usersWithoutCompany.Count > 0 ? usersWithoutCompany[(new Random()).Next(0, usersWithoutCompany.Count)] :
+                usersNotAlreadyInCompany[(new Random()).Next(0, usersNotAlreadyInCompany.Count)];
+                
             user.CompanyId = companyId;
             _context.Update(user);
             await _context.SaveChangesAsync();
