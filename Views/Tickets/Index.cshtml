@@ -1,8 +1,19 @@
 @model IEnumerable<TheBugTracker.Models.Ticket>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
 
 @{
     ViewData["Title"] = "Index";
 }
+
+<style>
+    tr {
+        cursor: pointer;
+    }
+    thead{
+        cursor: auto;
+    }
+</style>
 
 <h1>Tickets (@Model.Count())</h1>
 <select id="actions">
@@ -10,16 +21,23 @@
     <option value="/TicketPriorities">Edit Priorities</option>
     <option value="/TicketStatuses">Edit Statuses</option>
     <option value="/TicketTypes">Edit Types</option>
+    @if(!_signInManager.IsSignedIn(User))
+    {
     <option value="/Home/SeedTickets">Seed More Tickets</option>
     <option value="/Home/SeedTicketHistories">Seed Ticket Histories</option>
     <option value="/Home/UnseedTicketHistories">Unseed Ticket Histories</option>    
     <option value="/Home/UnseedTickets">Unseed All Tickets</option>
+    }
 </select>
-    
+@if(!_signInManager.IsSignedIn(User))
+{
+    <p><em>Seed data from <a href="https://catalog.data.gov/dataset" target="_blank">data.gov</a></em></p>
+}
+@if(_signInManager.IsSignedIn(User))
+{
+    <p><a asp-action="Create">Create New</a></p>
+}
 
-<p><em>Seed data from <a href="https://catalog.data.gov/dataset" target="_blank">data.gov</a></em></p>
-
-<p><a asp-action="Create">Create New</a></p>
 <table class="table">
     <thead>
         <tr>
@@ -64,16 +82,13 @@
     </thead>
     <tbody>
 @foreach (var item in Model.OrderByDescending(x => x.Created)) {
-        <tr>
+        <tr id="@item.Id">
             <td>
                 @Html.DisplayFor(modelItem => item.Id)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Title)
             </td>
-            @* <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td> *@
             <td>
                 @Html.DisplayFor(modelItem => item.Created)
             </td>
@@ -101,9 +116,6 @@
             <td>
                 @Html.DisplayFor(modelItem => item.DeveloperUser.FullName)
             </td>
-            <td>
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
-            </td>
         </tr>
 }
     </tbody>
@@ -113,5 +125,20 @@
     const actions = document.getElementById("actions")
     actions.addEventListener('change', (e) => {
         window.location = e.target.value
+    })
+</script>
+
+
+<script>
+    $(document).ready(() => {
+        let collection = document.getElementsByTagName("tr")
+        let rows = Array.from(collection);
+        rows.shift()
+
+        rows.forEach(row => {
+            row.addEventListener('click', e => {
+                window.location = `/Tickets/Details/${row.id}`
+            })
+        })
     })
 </script>

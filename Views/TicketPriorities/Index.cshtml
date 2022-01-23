@@ -1,17 +1,24 @@
 @model IEnumerable<TheBugTracker.Models.TicketPriority>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
 
 @{
     ViewData["Title"] = "Index";
 }
 
 <h1>Ticket Priorities (@Model.Count())</h1>
-<a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketPriorities">Seed</a>        
-<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketPriorities">Unseed</a>
-<p><em>Seed data is hardcoded</em></p>
+@if(!_signInManager.IsSignedIn(User))
+{
+    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedTicketPriorities">Seed</a>        
+    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedTicketPriorities">Unseed</a>
+    <p><em>Seed data is hardcoded</em></p>
+}
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if(_signInManager.IsSignedIn(User))
+{
+    <p><a asp-action="Create">Create New</a></p>
+}
+
 <table class="table">
     <thead>
         <tr>
@@ -27,11 +34,10 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
+            @if(_signInManager.IsSignedIn(User))
+            {
+            <td><a asp-action="Delete" asp-route-id="@item.Id">Delete</a></td>
+            }
         </tr>
 }
     </tbody>

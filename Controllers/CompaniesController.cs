@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,7 +24,7 @@ namespace TheBugTracker.Controllers
             _companyInfoService = companyInfoService;
         }
 
-        // GET: Companies
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             var companies = await _context.Companies
@@ -32,6 +34,7 @@ namespace TheBugTracker.Controllers
             return View(companies);
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> Profile(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
@@ -44,6 +47,7 @@ namespace TheBugTracker.Controllers
             return View(new CompanyProfileViewModel { Company = company, Members = company.Members, Projects = company.Projects });
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> AddProjectToCompany(int companyId)
         {
             var projects = await _context.Projects.Where(p => p.CompanyId == null).ToListAsync();
@@ -55,6 +59,7 @@ namespace TheBugTracker.Controllers
             return RedirectToAction("Profile", new { id = companyId });
         }
         
+        [AllowAnonymous]
         public async Task<IActionResult> AddMemberToCompany(int companyId)
         {
             var users = await _context.Users.Where(u => u.CompanyId == null).ToListAsync();
@@ -66,33 +71,12 @@ namespace TheBugTracker.Controllers
             return RedirectToAction("Profile", new { id = companyId });
         }
 
-        // GET: Companies/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var company = await _context.Companies
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (company == null)
-            {
-                return NotFound();
-            }
-
-            return View(company);
-        }
-
         // GET: Companies/Create
         public IActionResult Create()
         {
             return View();
         }
-
-        // POST: Companies/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Description")] Company company)
@@ -121,10 +105,7 @@ namespace TheBugTracker.Controllers
             }
             return View(company);
         }
-
-        // POST: Companies/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Company company)

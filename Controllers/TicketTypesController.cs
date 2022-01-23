@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class TicketTypesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -22,28 +24,10 @@ namespace TheBugTracker.Controllers
             _historyService = historyService;
         }
 
-        // GET: TicketTypes
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             return View(await _context.TicketTypes.ToListAsync());
-        }
-
-        // GET: TicketTypes/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticketType = await _context.TicketTypes
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticketType == null)
-            {
-                return NotFound();
-            }
-
-            return View(ticketType);
         }
 
         // GET: TicketTypes/Create
@@ -51,10 +35,7 @@ namespace TheBugTracker.Controllers
         {
             return View();
         }
-
-        // POST: TicketTypes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] TicketType ticketType)
@@ -67,42 +48,7 @@ namespace TheBugTracker.Controllers
             }
             return View(ticketType);
         }
-
-        // GET: TicketTypes/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticketType = await _context.TicketTypes.FindAsync(id);
-            if (ticketType == null)
-            {
-                return NotFound();
-            }
-            return View(ticketType);
-        }
-
-        // POST: TicketTypes/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, int ticketId)
-        {
-            var ticket = await _context.Tickets.FindAsync(ticketId);
-            var oldTicket = _historyService.DeepCopyTicket(ticket);
-
-            ticket.TicketTypeId = id;
-            _context.Tickets.Update(ticket);
-            await _context.SaveChangesAsync();
-            
-            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
-            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
-            return RedirectToAction("Details", "Tickets", new { id = ticketId });
-        }
-
+        
         // GET: TicketTypes/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {

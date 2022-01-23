@@ -1,19 +1,27 @@
 @model CompanyProfileViewModel
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
+
 <style>
     form{
         display: inline;
     }
 </style>
+
 <h1>@Model.Company.Name</h1>
-<form asp-action="AddProjectToCompany">
-    <input type="hidden" name="companyId" value="@Model.Company.Id">
-    <input type="submit" value="Add Project" class="btn btn-primary">
-</form>
-<form asp-action="AddMemberToCompany">
-    <input type="hidden" name="companyId" value="@Model.Company.Id">
-    <input type="submit" value="Add Member" class="btn btn-primary">
-</form>
+@if(!_signInManager.IsSignedIn(User))
+{
+    <form asp-action="AddProjectToCompany">
+        <input type="hidden" name="companyId" value="@Model.Company.Id">
+        <input type="submit" value="Add Project" class="btn btn-primary">
+    </form>
+    <form asp-action="AddMemberToCompany">
+        <input type="hidden" name="companyId" value="@Model.Company.Id">
+        <input type="submit" value="Add Member" class="btn btn-primary">
+    </form>
+}
 <hr>
+
 <div class="row">
     <div class="col seperateScroll">
         <h4>About</h4>

@@ -1,4 +1,6 @@
 @model IEnumerable<TheBugTracker.Models.Company>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
 
 @{
     ViewData["Title"] = "Index";
@@ -14,11 +16,18 @@
 </style>
 
 <h1>Companies (@Model.Count())</h1>
-<a class="btn btn-primary" asp-controller="Home" asp-action="SeedCompanies">Seed</a>        
-<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedCompanies">Unseed</a>  
-<p><em>Seed data from <a href="https://remotive.io/" target="_blank">remotive.io</a></em></p>
+@if(!_signInManager.IsSignedIn(User))
+{
+    <a class="btn btn-primary" asp-controller="Home" asp-action="SeedCompanies">Seed</a>        
+    <a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedCompanies">Unseed</a>  
+    <p><em>Seed data from <a href="https://remotive.io/" target="_blank">remotive.io</a></em></p>
+}
 
-<p><a asp-action="Create">Create New</a></p>
+@if(_signInManager.IsSignedIn(User))
+{
+    <p><a asp-action="Create">Create New</a></p>
+}
+
 <table class="table">
     <thead>
         <tr>

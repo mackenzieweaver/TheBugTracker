@@ -29,7 +29,7 @@
 
 <div class="row">
     @* Description, Attachments, Comments *@
-    <div class="col">
+    <div class="col border-right">
 
         <p class="mb-0"><strong>Description</strong></p>
         <p id="description">@Model.Description</p>
@@ -111,7 +111,7 @@
     @* Status, Priority, Type, Developer ... *@
     <div class="col-sm-4">
         <div class="row">
-            <div class="col">                
+            <div class="col">
                 <div class="row">
                     <div class="col">
                         <label asp-for="Archived" class="control-label"></label>
@@ -133,7 +133,6 @@
                         </form>
                     </div>
                 </div>
-
                 <div class="row">
                     <div class="col">
                         <label asp-for="TicketStatusId" class="control-label"></label>
@@ -217,11 +216,10 @@
                 }
             </div>
         </div>
-        
+        <hr>
         @* History *@
         <div class="row">            
             <div class="col">
-                <br>
                 <h4>History</h4>
                 @foreach (var history in Model.History.OrderByDescending(x => x.Created))
                 {
