@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @using TheBugTracker.Data
 @inject SignInManager<BTUser> SignInManager
 @inject UserManager<BTUser> UserManager
@@ -6,11 +7,14 @@
 
 @{
     BTUser user = null;
-    int notifications = 0;
+    List<Notification> notifications = new();
     if(SignInManager.IsSignedIn(User))
     {
         user = await UserManager.GetUserAsync(User);
-        notifications = _context.Notifications.Where(x => x.RecipientId == user.Id).Count();
+        notifications = _context.Notifications
+            .Where(x => x.RecipientId == user.Id)
+            .Include(x => x.Sender)
+            .ToList();
     }
 }
 
@@ -18,7 +22,7 @@
     #bell:hover{
         cursor: pointer;
     }
-    #notifications{
+    #notificationCount{
         position: absolute;
         right: 6px;
         top: -6px;
@@ -28,6 +32,17 @@
         font-weight: bold;
         padding: 2px 6px;
         font-size: 10px;
+    }
+    #notifications{
+        display: none;
+        position: fixed;
+
+        max-height: 90vh;
+        max-width: 25vw;
+        overflow: auto;
+
+        background-color: white;
+        z-index: 1;
     }
 </style>
 
@@ -50,11 +65,26 @@
                         </form>
                     </div>
                     <div class="col-auto">
-                        <form id="bell" asp-controller="Notifications" asp-action="Index">
-                            <input name="id" type="hidden" value="@user.Id" />
-                            <i class="fas fa-bell fa-2x"></i>
-                            <span id="notifications">@notifications.ToString()</span>
-                        </form>
+                        <i id="bell" class="fas fa-bell fa-2x"></i>
+                        <span id="notificationCount">@notifications.Count().ToString()</span>                        
+                        <div id="notifications" class="shadow-lg border rounded">
+                            <div class="m-3">
+                                <h3>Notifications</h3>
+                                <hr>
+                            </div>
+                            @foreach (var notification in notifications.OrderByDescending(x => x.Created))
+                            {
+                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                        <h5>@notification.Title</h5>
+                                        <p class="mb-0">@notification.Message</p>
+                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                        </p>
+                                    </div>
+                                </a>
+                            }
+                        </div>
                     </div>
                 </div>
             <hr>
@@ -73,6 +103,20 @@
 </ul>
 
 <script>
-    const bell = document.getElementById('bell')
-    bell.addEventListener('click', () => bell.submit())
+    $(document).ready(() => {
+        const bell = document.getElementById('bell')
+        const notifications = document.getElementById('notifications')
+
+        bell.addEventListener('click', (e) => {
+            e.stopPropagation()
+            if(notifications.style.display == 'block') notifications.style.display = 'none' 
+            else notifications.style.display = 'block'
+        })
+        
+        document.addEventListener('click', (e) => {
+            // don't close notifications if click is inside the tab
+            if(e.target.closest('#notifications') != null) return
+            if(notifications.style.display == 'block') notifications.style.display = 'none'
+        })
+    })
 </script>
