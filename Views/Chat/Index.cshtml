@@ -1,31 +1,14 @@
-@page
-    <div class="container">
-        <div class="row">&nbsp;</div>
+@model IEnumerable<BTUser>
+
+@foreach (var user in Model)
+{
+    <a asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@user.Id" class="text-dark text-decoration-none">
         <div class="row">
-            <div class="col-2">User</div>
-            <div class="col-4"><input type="text" id="userInput" /></div>
-        </div>
-        <div class="row">
-            <div class="col-2">Message</div>
-            <div class="col-4"><input type="text" id="messageInput" /></div>
-        </div>
-        <div class="row">&nbsp;</div>
-        <div class="row">
-            <div class="col-6">
-                <input type="button" id="sendButton" value="Send Message" />
+            <div class="col-2 border m-1">
+                    <img src="@user.AvatarFileName" alt="" style="border-radius: 50%; height: 50px; width: auto;">
+                    <span>@user.FullName</span>
             </div>
+            <br>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-12">
-            <hr />
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-6">
-            <ul id="messagesList"></ul>
-        </div>
-    </div>
-    
-<script src="~/js/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/chat.js"></script>
+    </a>
+}
