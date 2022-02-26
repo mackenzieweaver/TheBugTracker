@@ -74,15 +74,30 @@
                             </div>
                             @foreach (var notification in notifications.OrderByDescending(x => x.Created))
                             {
-                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
-                                    <div class="border m-3 p-3" style="overflow: auto;">
-                                        <h5>@notification.Title</h5>
-                                        <p class="mb-0">@notification.Message</p>
-                                        <p class="mb-0" style="font-size: 12px; color: gray;">
-                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
-                                        </p>
-                                    </div>
-                                </a>
+                                if(notification.TicketId != null)
+                                {
+                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                        <div class="border m-3 p-3" style="overflow: auto;">
+                                            <h5>@notification.Title</h5>
+                                            <p class="mb-0">@notification.Message</p>
+                                            <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                            </p>
+                                        </div>
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                        <div class="border m-3 p-3" style="overflow: auto;">
+                                            <h5>@notification.Title</h5>
+                                            <p class="mb-0">@notification.Message</p>
+                                            <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                            </p>
+                                        </div>
+                                    </a>
+                                }
                             }
                         </div>
                     </div>
@@ -120,3 +135,6 @@
         })
     })
 </script>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/notifications.js"></script>

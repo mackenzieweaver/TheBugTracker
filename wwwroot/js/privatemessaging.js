@@ -1,6 +1,8 @@
 var connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
 connection.start()
+
 scrollBottom()
+
 connection.on("ReceivePrivateMessage", message => addmessage(message, 'left'));
 
 let form = document.getElementById("form")
