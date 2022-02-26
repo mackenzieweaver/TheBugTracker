@@ -6,9 +6,9 @@
         overflow: auto;
     }
 
-    #messages > * {
-        padding: 1em;
-        border-radius: 1em;
+    .left, .right {
+        border-radius: 10px;
+        padding: .25em 0.5em;
     }
 
     .right {
@@ -19,6 +19,16 @@
     .left {
         background-color: lightgray;
     }
+
+    .date {
+        font-size: 12px;
+        color: gray;
+        padding: 0;
+    }
+
+    .right + .date {
+        text-align: end;
+    }
 </style>
 
 <div class="d-flex flex-column justify-content-between h-100">
@@ -26,7 +36,7 @@
     <div class="row justify-content-center">
         <div class="col-sm-8">
             <a asp-controller="Users" asp-action="Profile" asp-route-id="@Model.User.Id" class="text-dark text-decoration-none">
-                <div class="row align-items-center">
+                <div class="row align-items-end">
                     <div class="col-auto">
                         <img src="@Model.User.AvatarFileName" alt="" style="border-radius: 50%; height: 75px;">
                     </div>
@@ -46,13 +56,21 @@
                 {
                     @foreach (var message in Model.Messages)
                     {
+                        @* if it's from them put on left *@
                         @if(message.FromUserId == Model.User.Id)
                         {
-                            <p class="left">@message.Text</p>
+                            <div class="row m-0">
+                                <div class="col-auto left">@message.Text</div>
+                                <div class="col-12 date">@message.Created.ToString("d") @message.Created.ToString("t")</div>
+                            </div>
                         }
+                        @* else it's from logged in user, so put on right *@
                         else
                         {
-                            <p class="right">@message.Text</p>
+                            <div class="row justify-content-end m-0">
+                                <div class="col-auto right">@message.Text</div>
+                                <div class="col-12 date">@message.Created.ToString("d") @message.Created.ToString("t")</div>
+                            </div>
                         }
                     }
                 }
