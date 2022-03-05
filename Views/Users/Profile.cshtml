@@ -31,6 +31,10 @@
             {
                 <a class="btn btn-outline-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Manage account</a>
             }
+            else
+            {
+                <a class="btn btn-sm btn-outline-primary" asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@Model.User.Id">Chat</a>
+            }
         } 
     </div>
 </div>

@@ -35,21 +35,24 @@ namespace TheBugTracker.Hubs
             };
             await _context.Messages.AddAsync(m);
             await _context.SaveChangesAsync();
-
-            var n = new Notification
-            {
-                Title = $"New chat message from {fromuser.FullName}",
-                Message = message,
-                Created = DateTime.Now,
-                RecipientId = touser.Id,
-                SenderId = fromuser.Id,
-                ReturnUrl = $"/Chat/PrivateMessage/{fromuser.Id}"
-            };
+           
+            var t = $"{DateTime.Now.ToString("d")} {DateTime.Now.ToString("t")}";
+            await Clients.User(id).SendAsync("ReceivePrivateMessage", message);
+            await Clients.User(id).SendAsync("ReceiveNotification", 
+                $"/Chat/PrivateMessage/{fromuser.Id}",
+                $"New chat message from {fromuser.FullName}", 
+                message, 
+                t, 
+                fromuser.Id, 
+                touser.Id
+            );
+        }
+        
+        public async Task AddNotificationToDb(Notification n)
+        {
+            n.Created = DateTime.Now;
             await _context.Notifications.AddAsync(n);
             await _context.SaveChangesAsync();
-
-            await Clients.User(id).SendAsync("ReceivePrivateMessage", message);
-            await Clients.User(id).SendAsync("ReceiveNotification", n.ReturnUrl, n.Title, n.Message, $"{n.Created.ToString("d")} {n.Created.ToString("t")}");
         }
     }
 }

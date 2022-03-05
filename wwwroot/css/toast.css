@@ -1,0 +1,17 @@
+#toast-container {
+    z-index: 3;
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+}
+
+.customToast {
+    max-width: 300px;
+    max-height: 120px;
+    overflow: hidden;
+}
+
+.customBtnClose {
+    padding: 3px 10px;
+    border: none;
+}
