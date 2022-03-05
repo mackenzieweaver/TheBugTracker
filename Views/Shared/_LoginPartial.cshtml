@@ -66,39 +66,147 @@
                     </div>
                     <div class="col-auto">
                         <i id="bell" class="fas fa-bell fa-2x"></i>
-                        <span id="notificationCount">@notifications.Count().ToString()</span>                        
+                        <span id="notificationCount">@notifications.Where(x => x.Viewed == false).Count().ToString()</span>                        
                         <div id="notifications" class="shadow-lg border rounded">
-                            <div class="m-3">
+                            <div class="m-3 d-flex justify-content-between align-items-center">
                                 <h3>Notifications</h3>
-                                <hr>
+                                @if(notifications.Where(x => x.Viewed == false).Count() != 0)
+                                {
+                                    <a asp-controller="Notifications" asp-action="MarkAllAsRead" asp-route-id="@user.Id">mark all as read</a>
+                                }
                             </div>
-                            @foreach (var notification in notifications.OrderByDescending(x => x.Created))
-                            {
-                                if(notification.TicketId != null)
-                                {
-                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
-                                        <div class="border m-3 p-3" style="overflow: auto;">
-                                            <h5>@notification.Title</h5>
-                                            <p class="mb-0">@notification.Message</p>
-                                            <p class="mb-0" style="font-size: 12px; color: gray;">
-                                                <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
-                                            </p>
+
+                            <ul class="nav nav-tabs" id="myTab" role="tablist" style="margin-left: 1rem; margin-right: 1rem;">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#unseen-notifications" role="tab">New</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#seen-notifications" role="tab">Read</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#all-notifications" role="tab">All</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="unseen-notifications" role="tabpanel">
+                                    @if(notifications.Where(x => x.Viewed == false).Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                            <h5>No New Notifications!</h5>
+                                            <p>Click on another tab to see old notifications.</p>
                                         </div>
-                                    </a>
-                                }
-                                else
-                                {
-                                    <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
-                                        <div class="border m-3 p-3" style="overflow: auto;">
-                                            <h5>@notification.Title</h5>
-                                            <p class="mb-0">@notification.Message</p>
-                                            <p class="mb-0" style="font-size: 12px; color: gray;">
-                                                <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
-                                            </p>
+                                    }
+                                    else
+                                    {
+                                        foreach (var notification in notifications.Where(x => x.Viewed == false).OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <div class="tab-pane fade" id="seen-notifications" role="tabpanel">
+                                    @if(notifications.Where(x => x.Viewed == true).Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                            <h5>No Old Notifications!</h5>
+                                            <p>Click on another tab to see all notifications.</p>
                                         </div>
-                                    </a>
-                                }
-                            }
+                                    }
+                                    else
+                                    {
+                                        @foreach (var notification in notifications.Where(x => x.Viewed == true).OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <div class="tab-pane fade" id="all-notifications" role="tabpanel">
+                                    @if(notifications.Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                            <h5>No Notifications!</h5>
+                                            <p>Make some noise and you'll get some.</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var notification in notifications.OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

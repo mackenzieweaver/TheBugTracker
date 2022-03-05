@@ -10,9 +10,9 @@ connection.on("ReceiveNotification", (returnUrl, title, message, created, fromId
         RecipientId: toId,
         SenderId: fromId
     })
-    const notifications = document.getElementById('notifications')
+    const notifications = document.getElementById('unseen-notifications')
     let a = createLink(returnUrl, title, message, created)
-    notifications.insertBefore(a, notifications.children[1])
+    notifications.insertBefore(a, notifications.children[0])
     updateCounter()
     showToastNotification(returnUrl, title, message)
 })
