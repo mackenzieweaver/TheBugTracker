@@ -3,6 +3,7 @@ connection.start()
 
 connection.on("ReceiveNotification", (returnUrl, title, message, created, fromId, toId) => {
     if(window.location.pathname === returnUrl) return
+
     connection.invoke("AddNotificationToDb", {
         ReturnUrl: returnUrl,
         Title: title,
@@ -10,9 +11,16 @@ connection.on("ReceiveNotification", (returnUrl, title, message, created, fromId
         RecipientId: toId,
         SenderId: fromId
     })
-    const notifications = document.getElementById('unseen-notifications')
+
     let a = createLink(returnUrl, title, message, created)
-    notifications.insertBefore(a, notifications.children[0])
+
+    const unseenNotifications = document.getElementById('unseen-notifications')
+    unseenNotifications.prepend(a)
+
+    let clone = a.cloneNode(true)
+    const allNotifications = document.getElementById('all-notifications')
+    allNotifications.prepend(clone)
+    
     updateCounter()
     showToastNotification(returnUrl, title, message)
 })
