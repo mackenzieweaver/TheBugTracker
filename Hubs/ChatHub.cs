@@ -35,23 +35,35 @@ namespace TheBugTracker.Hubs
             };
             await _context.Messages.AddAsync(m);
             await _context.SaveChangesAsync();
-           
-            var t = $"{DateTime.Now.ToString("d")} {DateTime.Now.ToString("t")}";
             await Clients.User(id).SendAsync("ReceivePrivateMessage", message);
-            await Clients.User(id).SendAsync("ReceiveNotification", 
-                $"/Chat/PrivateMessage/{fromuser.Id}",
-                $"New chat message from {fromuser.FullName}", 
-                message, 
-                t, 
-                fromuser.Id, 
-                touser.Id
-            );
+           
+            var t = $"At {DateTime.Now.ToString("t")} on {DateTime.Now.ToString("d")}";
+            var n = new Notification
+            {
+                ReturnUrl = $"/Chat/PrivateMessage/{fromuser.Id}",
+                Title = $"New message from {fromuser.FullName}", 
+                Message = message,
+                Created = DateTime.Now,
+                RecipientId = touser.Id,
+                SenderId = fromuser.Id
+            };
+            await _context.Notifications.AddAsync(n);
+            await _context.SaveChangesAsync();
+            await Clients.User(id).SendAsync("ReceiveNotification", n.Id, n.ReturnUrl, n.Title, n.Message, t);
         }
         
-        public async Task AddNotificationToDb(Notification n)
+        public async Task RemoveNotificationFromDb(int id)
         {
-            n.Created = DateTime.Now;
-            await _context.Notifications.AddAsync(n);
+            var n = await _context.Notifications.FindAsync(id);
+            _context.Remove(n);
+            await _context.SaveChangesAsync();
+        }
+        
+        public async Task MarkNotificationAsRead(int id)
+        {
+            var n = await _context.Notifications.FindAsync(id);
+            n.Viewed = true;
+            _context.Update(n);
             await _context.SaveChangesAsync();
         }
     }

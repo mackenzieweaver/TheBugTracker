@@ -36,13 +36,17 @@
     #notifications{
         display: none;
         position: fixed;
-
-        max-height: 90vh;
-        max-width: 25vw;
-        overflow: auto;
-
         background-color: white;
         z-index: 1;
+    }
+    .tab-pane {
+        max-height: 80vh;
+        max-width: 25vw;
+        overflow: auto;
+    }
+    .nav-tabs {
+        margin-left: 1rem; 
+        margin-right: 2rem;
     }
 </style>
 
@@ -72,16 +76,16 @@
                                 <h3>Notifications</h3>
                                 @if(notifications.Where(x => x.Viewed == false).Count() != 0)
                                 {
-                                    <a asp-controller="Notifications" asp-action="MarkAllAsRead" asp-route-id="@user.Id">mark all as read</a>
+                                    <a id="clearAll" asp-controller="Notifications" asp-action="MarkAllAsRead" asp-route-id="@user.Id" title="Mark all as read">clear</a>
                                 }
                             </div>
 
-                            <ul class="nav nav-tabs" id="myTab" role="tablist" style="margin-left: 1rem; margin-right: 1rem;">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#unseen-notifications" role="tab">New</a>
+                                    <a id="unseen-notifications-tab-link" class="nav-link active" data-toggle="tab" href="#unseen-notifications" role="tab">New</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#seen-notifications" role="tab">Read</a>
+                                    <a id="seen-notifications-tab-link" class="nav-link" data-toggle="tab" href="#seen-notifications" role="tab">Read</a>
                                 </li>
                                 <li class="nav-item">
                                     <a id="all-notifications-tab-link" class="nav-link" data-toggle="tab" href="#all-notifications" role="tab">All</a>
@@ -92,7 +96,7 @@
                                 <div class="tab-pane fade show active" id="unseen-notifications" role="tabpanel">
                                     @if(notifications.Where(x => x.Viewed == false).Count() == 0)
                                     {
-                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                        <div class="noNotificationsMessage m-3 p-3">
                                             <h5>No New Notifications!</h5>
                                             <p>Click on another tab to see old notifications.</p>
                                         </div>
@@ -103,27 +107,29 @@
                                         {
                                             if(notification.TicketId != null)
                                             {
-                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
-                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                <div class="border m-3 p-3" style="overflow: auto; position: relative;">
+                                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
                                                         <h5>@notification.Title</h5>
                                                         <p class="mb-0">@notification.Message</p>
                                                         <p class="mb-0" style="font-size: 12px; color: gray;">
                                                             <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
                                                         </p>
-                                                    </div>
-                                                </a>
+                                                    </a>
+                                                    <button title="Mark as Read" class="btn btn-outline-danger markNotificationAsRead" onclick="markAsRead(@notification.Id, this)">x</button>
+                                                </div>
                                             }
                                             else
                                             {
-                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
-                                                    <div class="border m-3 p-3" style="overflow: auto;">
-                                                        <h5>@notification.Title</h5>
+                                                <div class="border m-3 p-3" style="overflow: auto; position: relative;">
+                                                    <a href="@notification.ReturnUrl" class="text-dark text-decoration-none" title="Go to Notification">
+                                                        <h5 class="mr-4">@notification.Title</h5>
                                                         <p class="mb-0">@notification.Message</p>
                                                         <p class="mb-0" style="font-size: 12px; color: gray;">
                                                             <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
                                                         </p>
-                                                    </div>
-                                                </a>
+                                                    </a>
+                                                    <button title="Mark as Read" class="btn btn-outline-danger markNotificationAsRead" onclick="markAsRead(@notification.Id, this)">x</button>
+                                                </div>
                                             }
                                         }
                                     }
@@ -241,5 +247,10 @@
             if(e.target.closest('#notifications') != null) return
             if(notifications.style.display == 'block') notifications.style.display = 'none'
         })
+
+        const clearAll = document.getElementById('clearAll')
+        document.getElementById('unseen-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'block')
+        document.getElementById('seen-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'none')
+        document.getElementById('all-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'none')
     })
 </script>
