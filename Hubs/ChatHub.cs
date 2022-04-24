@@ -78,5 +78,10 @@ namespace TheBugTracker.Hubs
         {
             await Clients.User(id).SendAsync("ReceiveAnswer", answer);
         }
+        
+        public async Task SendIceCandidate(string id, string iceCandidate)
+        {
+            await Clients.User(id).SendAsync("ReceiveIceCandidate", iceCandidate);
+        }
     }
 }
