@@ -66,5 +66,17 @@ namespace TheBugTracker.Hubs
             _context.Update(n);
             await _context.SaveChangesAsync();
         }
+       
+        // ==============================================
+
+        public async Task SendOfferToUser(string id, string offer, string callerId)
+        {
+            await Clients.User(id).SendAsync("ReceiveOffer", offer, callerId);
+        }
+
+        public async Task SendAnswerToCaller(string id, string answer)
+        {
+            await Clients.User(id).SendAsync("ReceiveAnswer", answer);
+        }
     }
 }
