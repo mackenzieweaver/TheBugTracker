@@ -1,0 +1,26 @@
+@using TheBugTracker.Models
+@model BTUser
+
+<style>
+    button:focus {
+        outline: none;
+    }
+</style>
+
+<div class="row">
+    <div class="col">
+        <button style="border: none; background-color: rgba(0,0,0,0);"
+            onclick="ToggleMic(this)"
+        >
+            <img src="~/img/microphone-solid.svg" alt="" style="height: 24px;">
+        </button>
+        <button style="border: none; background-color: rgba(0,0,0,0);"
+            onclick="ToggleCam(this)"
+        >
+            <img src="~/img/video-solid.svg" alt="" style="height: 24px;">
+        </button>
+        <video id="localVideo" autoplay muted></video>
+    </div>
+</div>
+
+<script src="~/js/call.js"></script>

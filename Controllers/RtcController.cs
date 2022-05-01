@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,12 @@ namespace TheBugTracker.Controllers
                 Users = users
             };
             return View(viewModel);
+        }
+        
+        public async Task<IActionResult> Call(string userid, string callid)
+        {
+            var user = await _context.Users.FindAsync(userid);
+            return View(user);
         }
     }
 }

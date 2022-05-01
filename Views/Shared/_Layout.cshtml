@@ -1,9 +1,22 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using TheBugTracker.Data
+@using Microsoft.EntityFrameworkCore
 @inject SignInManager<BTUser> _signInManager
 @inject UserManager<BTUser> _userManager
+@inject ApplicationDbContext _context
 
 @{
     var user = await _userManager.GetUserAsync(User);
+    List<BTUser> users;
+    if (_signInManager.IsSignedIn(User))
+    {
+        users = await _context.Users.Where(x => x.CompanyId == user.CompanyId).ToListAsync();
+        users.Remove(user);
+    }
+    else
+    {
+        users = await _context.Users.ToListAsync();
+    }
 }
 
 <!DOCTYPE html>
@@ -32,46 +45,61 @@
 
     <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-right box-shadow p-0">
-
             <button class="navbar-toggler m-3" type="button" data-toggle="collapse" data-target=".navbar-collapse"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="height: 100vh">
+                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="min-height: 100vh">
                     <li class="nav-item"><partial name="_LoginPartial" /></li>
                     <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Users</a></li>
-                    @if(_signInManager.IsSignedIn(User))
-                    {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Profile" asp-route-id="@user.CompanyId">Company</a></li>
-                    }
-                    else
-                    {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li>
-                    }
+                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li> }
                     <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
                     <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
-                    @if(_signInManager.IsSignedIn(User))
-                    {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat" asp-action="Index">Chat</a></li>
-                    }
-                    else
-                    {
-                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat" asp-action="Anonymous">Chat</a></li>
-                    }
+                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
                 </ul>
             </div>
-
         </nav>
     </div>
 
     <div class="col p-3 customcontainer">
         @RenderBody()
+        <div id="toast-container"></div>
     </div>
 
-    <div id="toast-container"></div>
+    <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer border-left">
+        <div class="sticky-top bg-white px-3 pt-3">
+            <h2>Teammates</h2>
+            <hr />
+        </div>
+        <ul class="navbar-nav px-3 pb-3">
+            @foreach (var u in users)
+            {
+                <li class="my-1">
+                    <div class="d-flex justify-content-between border rounded">
+                        <div>
+                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@u.Id" class="text-decoration-none"
+                            style="color: black;">
+                                <img src="@u.AvatarFileName" alt="" style="height: 50px;" />
+                                @u.FullName
+                            </a>
+                        </div>
+                        @if (_signInManager.IsSignedIn(User))
+                        {
+                            <div class="align-self-center mx-3">
+                                <a asp-controller="Rtc" asp-action="Call" asp-route-userid="@u.Id" asp-route-callid="@Guid.NewGuid()" class="mx-3 text-decoration-none">
+                                    <img src="~/img/phone-solid.svg" alt="" style="height: 16px;" />
+                                </a>
+                                <a asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@u.Id" class="text-decoration-none">
+                                    <img src="~/img/message-solid.svg" alt="" style="height: 16px;" />
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
