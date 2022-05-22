@@ -87,7 +87,7 @@
                         @if (_signInManager.IsSignedIn(User))
                         {
                             <div class="align-self-center mx-3">
-                                <a asp-controller="Rtc" asp-action="Call" asp-route-userid="@u.Id" asp-route-callid="@Guid.NewGuid()" class="mx-3 text-decoration-none">
+                                <a data-call-id="@u.Id" asp-controller="Rtc" asp-action="Call" asp-route-userid="@u.Id" asp-route-callid="@Guid.NewGuid()" class="mx-3 text-decoration-none">
                                     <img src="~/img/phone-solid.svg" alt="" style="height: 16px;" />
                                 </a>
                                 <a asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@u.Id" class="text-decoration-none">
@@ -105,6 +105,7 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/notifications.js"></script>
+    <script src="~/js/removeTeammateIfCalled.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

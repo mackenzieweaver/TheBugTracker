@@ -8,18 +8,19 @@
 </style>
 
 <div class="row">
-    <div class="col">
-        <button style="border: none; background-color: rgba(0,0,0,0);"
-            onclick="ToggleMic(this)"
-        >
+    <div class="col-12 text-center pb-3">
+        <video id="localVideo" autoplay muted></video>
+        <br />
+        <button style="border: none; background-color: rgba(0,0,0,0);" onclick="ToggleMic(this)">
             <img src="~/img/microphone-solid.svg" alt="" style="height: 24px;">
         </button>
-        <button style="border: none; background-color: rgba(0,0,0,0);"
-            onclick="ToggleCam(this)"
-        >
+        <button style="border: none; background-color: rgba(0,0,0,0);" onclick="ToggleCam(this)">
             <img src="~/img/video-solid.svg" alt="" style="height: 24px;">
         </button>
-        <video id="localVideo" autoplay muted></video>
+    </div>
+    
+    <div class="col-12 text-center">
+        <video id="remoteVideo" autoplay muted></video>
     </div>
 </div>
 

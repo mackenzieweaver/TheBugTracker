@@ -1,8 +1,9 @@
 const localVideo = document.getElementById('localVideo')
-localVideo.style.width = "95%"
-localVideo.style.height = "95%"
+const remoteVideo = document.getElementById('remoteVideo')
+remoteVideo.style.backgroundColor = 'gray'
+remoteVideo.style.width = '640px'
 
-let constraints = { video: true, audio: true }
+const constraints = { video: true, audio: true }
 async function LoadMedia() {
     try {
         localVideo.srcObject = await navigator.mediaDevices.getUserMedia(constraints)
