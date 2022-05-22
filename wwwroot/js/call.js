@@ -33,10 +33,13 @@ async function ToggleCam(el) {
     el.children[0].remove()
     let img = document.createElement('img')
     img.style.height = '24px'
+    const width = localVideo.clientWidth
+    const height = localVideo.clientHeight
 
     if(constraints.video === true) {
         constraints.video = false
         img.src = '/img/video-slash-solid.svg'
+        localVideo.style.backgroundColor = 'gray'
     } else {
         constraints.video = true
         img.src = '/img/video-solid.svg'
@@ -44,9 +47,11 @@ async function ToggleCam(el) {
 
     el.appendChild(img)
     await LoadMedia()
+    
+    localVideo.style.width = `${width}px`
+    localVideo.style.height = `${height}px`
 }
 
 (async () => {
     await LoadMedia()
 })()
-  
