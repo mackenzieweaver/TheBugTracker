@@ -32,10 +32,15 @@ namespace TheBugTracker.Controllers
             return View(viewModel);
         }
         
-        public async Task<IActionResult> Call(string userid, string callid)
+        public async Task<IActionResult> Call(string calleeid, string callid, string callerid)
         {
-            var user = await _context.Users.FindAsync(userid);
-            return View(user);
+            var callee = await _context.Users.FindAsync(calleeid);
+            var caller = await _context.Users.FindAsync(callerid);
+            return View(new Call {
+                Callee = callee,
+                Caller = caller,
+                CallId = callid
+            });
         }
     }
 }

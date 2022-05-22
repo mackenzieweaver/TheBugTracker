@@ -87,7 +87,7 @@
                         @if (_signInManager.IsSignedIn(User))
                         {
                             <div class="align-self-center mx-3">
-                                <a data-call-id="@u.Id" asp-controller="Rtc" asp-action="Call" asp-route-userid="@u.Id" asp-route-callid="@Guid.NewGuid()" class="mx-3 text-decoration-none">
+                                <a data-callee-id="@u.Id" asp-controller="Rtc" asp-action="Call" asp-route-calleeid="@u.Id" asp-route-callid="@Guid.NewGuid()" asp-route-callerid="@user.Id" class="mx-3 text-decoration-none">
                                     <img src="~/img/phone-solid.svg" alt="" style="height: 16px;" />
                                 </a>
                                 <a asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@u.Id" class="text-decoration-none">

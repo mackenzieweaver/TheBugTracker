@@ -1,5 +1,11 @@
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<BTUser> _userManager
 @using TheBugTracker.Models
-@model BTUser
+@model Call
+
+@{
+    var user = await _userManager.GetUserAsync(User);
+}
 
 <style>
     button:focus {
@@ -7,8 +13,9 @@
     }
 </style>
 
-<div class="row">
-    <div class="col-12 text-center pb-3">
+<div class="row" data-my-id="@user.Id" data-callee-id="@Model.Callee.Id" data-caller-id="@Model.Caller.Id">
+    <div class="col-12 pb-3">
+        <h3>@user.FirstName</h3>
         <video id="localVideo" autoplay muted></video>
         <br />
         <button style="border: none; background-color: rgba(0,0,0,0);" onclick="ToggleMic(this)">
@@ -17,11 +24,27 @@
         <button style="border: none; background-color: rgba(0,0,0,0);" onclick="ToggleCam(this)">
             <img src="~/img/video-solid.svg" alt="" style="height: 24px;">
         </button>
+        <select id="cameras"></select>
+        <div id="selectedDeviceIdEl"></div>
     </div>
     
-    <div class="col-12 text-center">
+    <div class="col-12">
+            <h3>
+                @if(user.Id == Model.Callee.Id) {
+                    @Model.Caller.FirstName
+                } else {
+                    @Model.Callee.FirstName
+                }
+            </h3>
         <video id="remoteVideo" autoplay muted></video>
     </div>
 </div>
 
+<div class="row">
+    <div class="col">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-danger">End Call</a>
+    </div>
+</div>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
 <script src="~/js/call.js"></script>
