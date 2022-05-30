@@ -6,14 +6,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TheBugTracker.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace TheBugTracker
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+            await ProgramaticMigration(host);
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
@@ -22,5 +27,20 @@ namespace TheBugTracker
                 {
                     webBuilder.UseStartup<Startup>();
                 });
+
+        public static async Task ProgramaticMigration(IHost host)
+        {
+            try
+            {
+                using var svcScope = host.Services.CreateScope();
+                var svcProvider = svcScope.ServiceProvider;
+                var dbContextSvc = svcProvider.GetRequiredService<ApplicationDbContext>();
+                await dbContextSvc.Database.MigrateAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception while running Programatic Migration Data => {ex}");
+            }
+        }
     }
 }
