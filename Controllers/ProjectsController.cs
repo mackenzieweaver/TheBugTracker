@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ using TheBugTracker.Models;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class ProjectsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -18,35 +20,51 @@ namespace TheBugTracker.Controllers
         {
             _context = context;
         }
-
-        // GET: Projects
+        
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Projects.Include(p => p.Company).Include(p => p.ProjectPriority);
-            return View(await applicationDbContext.ToListAsync());
-        }
-
-        // GET: Projects/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var project = await _context.Projects
+            var projects = await _context.Projects
+                .Include(p => p.Tickets)
                 .Include(p => p.Company)
                 .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (project == null)
-            {
-                return NotFound();
-            }
+                .ToListAsync();
 
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) 
+                projects = projects.Where(project => project.CompanyId == user.CompanyId).ToList();
+            return View(projects);
+        }
+        
+        [AllowAnonymous]
+        public async Task<IActionResult> AddTicketToProject(int projectId)
+        {
+            var tickets = await _context.Tickets.Where(x => x.ProjectId != projectId).ToListAsync();
+            var r = (new Random()).Next(0, tickets.Count);
+            tickets[r].ProjectId = projectId;
+            _context.Update(tickets[r]);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", new { id = projectId });
+        }
+
+        [AllowAnonymous]
+        public async Task<IActionResult> Details(int id)
+        {
+            var project = await _context.Projects
+                .Include(p => p.Company)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketType)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketStatus)
+                .Include(p => p.Tickets).ThenInclude(x => x.TicketPriority)
+                .Include(p => p.Members)
+                .Include(p => p.ProjectPriority)
+                .FirstOrDefaultAsync(m => m.Id == id);
+
+            if (project == null) return NotFound();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) if(project.CompanyId != user.CompanyId) return NotFound();
             return View(project);
         }
 
-        // GET: Projects/Create
         public IActionResult Create()
         {
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name");
@@ -54,9 +72,6 @@ namespace TheBugTracker.Controllers
             return View();
         }
 
-        // POST: Projects/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
@@ -72,7 +87,6 @@ namespace TheBugTracker.Controllers
             return View(project);
         }
 
-        // GET: Projects/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -90,9 +104,6 @@ namespace TheBugTracker.Controllers
             return View(project);
         }
 
-        // POST: Projects/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
@@ -125,37 +136,6 @@ namespace TheBugTracker.Controllers
             ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
             ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
             return View(project);
-        }
-
-        // GET: Projects/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (project == null)
-            {
-                return NotFound();
-            }
-
-            return View(project);
-        }
-
-        // POST: Projects/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var project = await _context.Projects.FindAsync(id);
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
         }
 
         private bool ProjectExists(int id)

@@ -4,7 +4,9 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Invites (@Model.Count())</h1>
+<a class="btn btn-primary" asp-controller="Home" asp-action="SeedInvites">Seed</a>        
+<a class="btn btn-outline-primary" asp-controller="Home" asp-action="UnseedInvites">Unseed</a>
 
 <p>
     <a asp-action="Create">Create New</a>
@@ -79,10 +81,10 @@
                 @Html.DisplayFor(modelItem => item.Project.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Invitor.Id)
+                @Html.DisplayFor(modelItem => item.Invitor.FullName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Invitee.Id)
+                @Html.DisplayFor(modelItem => item.Invitee.FullName)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

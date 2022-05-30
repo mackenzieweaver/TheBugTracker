@@ -1,4 +1,25 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using TheBugTracker.Data
+@using Microsoft.EntityFrameworkCore
+@inject SignInManager<BTUser> _signInManager
+@inject UserManager<BTUser> _userManager
+@inject ApplicationDbContext _context
+
+@{
+    var user = await _userManager.GetUserAsync(User);
+    List<BTUser> users;
+    if (_signInManager.IsSignedIn(User))
+    {
+        users = await _context.Users.Where(x => x.CompanyId == user.CompanyId).ToListAsync();
+        users.Remove(user);
+    }
+    else
+    {
+        users = await _context.Users.ToListAsync();
+    }
+}
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,114 +28,84 @@
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/toast.css" />
+    <link rel="stylesheet" href="~/css/notification.css" />
     <style>
         .customcontainer {
             max-height: 100vh;
             max-width: 100%;
             overflow: auto;
         }
-        ::-webkit-scrollbar {
-            width: 12px;
-            height: 12px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #88A7FC;
-            border-radius: 13px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #7191FA;
-        }
-        ::-webkit-scrollbar-track {
-            background: #FFFFFF;
-            border: 4px solid #FFFFFF;
-            border-radius: 13px;
-            box-shadow: inset 3px 3px 21px 0px #A8B7F7;
-        }
     </style>
+    <script src="https://kit.fontawesome.com/8b5ae67e5c.js" crossorigin="anonymous"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
 </head>
 
 <body class="row m-0">
 
-    <div class="col-12 col-sm-4 col-lg-3 col-xl-2 p-0 customcontainer">
+    <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer">
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-right box-shadow p-0">
-
             <button class="navbar-toggler m-3" type="button" data-toggle="collapse" data-target=".navbar-collapse"
                 aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="height: 100vh">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <partial name="_LoginPartial" />
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Companies"
-                            asp-action="Index">Company</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Invites" asp-action="Index">Invite</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Notifications"
-                            asp-action="Index">Notification</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Projects"
-                            asp-action="Index">Project</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="ProjectPriorities"
-                            asp-action="Index">ProjectPriority</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Tickets" asp-action="Index">Ticket</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketAttachments"
-                            asp-action="Index">TicketAttachment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketComments"
-                            asp-action="Index">TicketComment</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketHistories"
-                            asp-action="Index">TicketHistory</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketPriorities"
-                            asp-action="Index">TicketPriority</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketStatuses"
-                            asp-action="Index">TicketStatus</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="TicketTypes"
-                            asp-action="Index">TicketTypes</a>
-                    </li>
+                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="min-height: 100vh">
+                    <li class="nav-item"><partial name="_LoginPartial" /></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
+                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li> }
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
+                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
                 </ul>
             </div>
-
         </nav>
     </div>
 
     <div class="col p-3 customcontainer">
-        <main role="main">
-            @RenderBody()
-        </main>
+        @RenderBody()
+        <div id="toast-container"></div>
     </div>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer border-left">
+        <div class="sticky-top bg-white px-3 pt-3">
+            <h2>Teammates</h2>
+            <hr />
+        </div>
+        <ul class="navbar-nav px-3 pb-3">
+            @foreach (var u in users)
+            {
+                <li class="my-1">
+                    <div class="d-flex justify-content-between border rounded">
+                        <div>
+                            <a asp-controller="Users" asp-action="Profile" asp-route-id="@u.Id" class="text-decoration-none"
+                            style="color: black;">
+                                <img src="@u.AvatarFileName" alt="" style="height: 50px;" />
+                                @u.FullName
+                            </a>
+                        </div>
+                        @if (_signInManager.IsSignedIn(User))
+                        {
+                            <div class="align-self-center mx-3">
+                                <a data-callee-id="@u.Id" asp-controller="Rtc" asp-action="Call" asp-route-calleeid="@u.Id" asp-route-callid="@Guid.NewGuid()" asp-route-callerid="@user.Id" class="mx-3 text-decoration-none">
+                                    <img src="~/img/phone-solid.svg" alt="" style="height: 16px;" />
+                                </a>
+                                <a asp-controller="Chat" asp-action="PrivateMessage" asp-route-id="@u.Id" class="text-decoration-none">
+                                    <img src="~/img/message-solid.svg" alt="" style="height: 16px;" />
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/signalr/dist/browser/signalr.js"></script>
+    <script src="~/js/notifications.js"></script>
+    <script src="~/js/removeTeammateIfCalled.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 

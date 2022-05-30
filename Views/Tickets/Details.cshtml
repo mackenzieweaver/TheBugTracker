@@ -1,84 +1,292 @@
 @model TheBugTracker.Models.Ticket
+@using Microsoft.AspNetCore.Identity
+@using System.IO
+@inject UserManager<BTUser> _userManager
+@using TheBugTracker.Services.Interfaces
+@inject IBTFileService fileService
 
 @{
     ViewData["Title"] = "Details";
+    var user = await _userManager.GetUserAsync(User);
 }
 
-<h1>Details</h1>
+<style>
+    #title:hover, #description:hover {
+        background-color: rgba(240, 240, 240, 1);
+        cursor: pointer;
+    }
+</style>
 
-<div>
-    <h4>Ticket</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Created)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Created)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Updated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Updated)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Archived)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Archived)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Project)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Project.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TicketType)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketType.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TicketPriority)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketPriority.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TicketStatus)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TicketStatus.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.OwnerUser)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.OwnerUser.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DeveloperUser)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DeveloperUser.Id)
-        </dd>
-    </dl>
+<h1 id="title">@Model.Title</h1>
+<form id="titleForm" asp-controller="Tickets" asp-action="EditTitle" style="display: none;">
+    <input type="hidden" value="@Model.Id" name="id" />
+    <input name="title" style="width: 65%; margin-bottom: 8px; padding: 8px;" value="@Model.Title" />
+    <br>
+    <input class="btn btn-primary" type="submit" value="Save" />
+    <button class="btn btn-outline-primary" id="cancelTitleEdit">Cancel</button>
+</form>
+<hr>
+
+<div class="row">
+    @* Description, Attachments, Comments *@
+    <div class="col border-right">
+
+        <p class="mb-0"><strong>Description</strong></p>
+        <p id="description">@Model.Description</p>
+
+        <form id="descriptionForm" asp-controller="Tickets" asp-action="EditDescription" style="display: none;">
+            <input type="hidden" value="@Model.Id" name="id" />
+            <textarea name="description" style="width: 100%; max-height: 400px; min-height: 100px;">@Model.Description</textarea>
+            <br>
+            <input class="btn btn-primary" type="submit" value="Save" />
+            <button class="btn btn-outline-primary" id="cancelDescriptionEdit">Cancel</button>
+        </form>
+
+        <h4>Attachments</h4>
+        @if(User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="TicketAttachments" asp-action="Create" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="TicketId" value="@Model.Id" />
+                <input type="hidden" name="Created" value="@DateTime.Now" />
+                <input type="hidden" name="UserId" value="@user.Id" />
+                <input type="hidden" name="Description" value="File upload" />
+
+                <input name="FormFile" type="file" class="mb-1" /><br>
+                <input type="submit" value="Upload" class="btn btn-primary" />
+            </form>
+        }
+        @foreach (var attachment in Model.Attachments)
+        {
+            var dir = Directory.GetCurrentDirectory();
+            string path = System.IO.Path.Combine(dir, "wwwroot", "attachments", attachment.FileName);
+            string extension = System.IO.Path.GetExtension(attachment.FileName);
+            string file = $"../../attachments/{attachment.FileName}";
+            @if(File.Exists(path))
+            {
+                @if(attachment.FileName.EndsWith(".json"))
+                {                    
+                    <a href=@file target="_blank">meta-data.json</a>
+                }
+                else
+                {
+                    <a href=@file target="_blank">@attachment.FileName</a>
+                }
+            }
+            else
+            {
+                <a href=@fileService.ConvertByteArrayToFile(attachment.FileData, extension) target="_blank" download=@attachment.FileName>@attachment.FileName</a>
+            }
+            <br>
+        }
+
+        <br>
+        <h4>Comments</h4>
+        @if(User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="TicketComments" asp-action="Create" method="post">
+                <input type="hidden" name="TicketId" value="@Model.Id" />
+                <input type="hidden" name="UserId" value="@user.Id" />
+                <input type="hidden" name="Created" value="@DateTime.Now" />
+
+                <input class="form-control mb-1" type="text" placeholder="Add a comment..." name="Comment" />
+
+                <div class="form-group">
+                    <input type="submit" value="Save" class="btn btn-primary" />
+                </div>
+            </form>
+        }
+        
+        @foreach (var comment in Model.Comments.OrderByDescending(x => x.Created))
+        {
+            <p style="font-size: 12px;" class="mb-0">
+                <a asp-controller="Users" asp-action="Profile" asp-route-id="@comment.UserId" class="text-dark text-decoration-underline">
+                    <strong>@comment.User.FullName</strong> 
+                </a>
+                <span style="color: #606060">@comment.Created.ToString("d") @comment.Created.ToString("t")</span>
+            </p>
+            <p style="font-size: 14px;">@comment.Comment</p>
+        }
+    </div>
+
+    @* Status, Priority, Type, Developer ... *@
+    <div class="col-sm-4">
+        <div class="row">
+            <div class="col">
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="Archived" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketArchivedForm" asp-controller="Tickets" asp-action="EditArchived">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <select name="archive">
+                                <option value="@Model.Archived">@Model.Archived</option>
+                                @if(Model.Archived == false)
+                                {
+                                    <option value="true">True</option>
+                                }
+                                else
+                                {                                    
+                                    <option value="false">False</option>
+                                }
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketStatusId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketStatusForm" asp-controller="TicketStatuses" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.StatusList">
+                                <option value="@Model.TicketStatusId">@Model.TicketStatus.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketPriorityId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketPriorityForm" asp-controller="TicketPriorities" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.PriorityList">
+                                <option value="@Model.TicketPriorityId">@Model.TicketPriority.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="TicketTypeId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketTypeForm" asp-controller="TicketTypes" asp-action="Edit" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.TypeList">
+                                <option value="@Model.TicketTypeId">@Model.TicketType.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="DeveloperUserId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <form id="TicketAssigneeForm" asp-controller="Tickets" asp-action="EditDeveloper" method="post">
+                            <input type="hidden" name="ticketId" value="@Model.Id" />
+                            <select name="id" asp-items="ViewBag.AssigneeList">
+                                <option value="@Model.DeveloperUserId">@Model.DeveloperUser.FullName</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="OwnerUserId" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        <a asp-controller="Users" asp-action="Profile" asp-route-id="@Model.OwnerUserId" class="text-dark text-decoration-underline">
+                            @Model.OwnerUser.FullName
+                        </a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <label asp-for="Created" class="control-label"></label>
+                    </div>
+                    <div class="col">
+                        @Model.Created.ToString("d") @Model.Created.ToString("t")
+                    </div>
+                </div>
+                @if(Model.Updated is not null) 
+                {
+                    <div class="row">
+                        <div class="col">
+                            <label asp-for="Updated" class="control-label"></label>
+                        </div>
+                        <div class="col">
+                            <span>Updated:</span> <span>@Model.Updated?.ToString("d")</span> <span>@Model.Updated?.ToString("t")</span>
+                        </div>
+                    </div>                    
+                }
+            </div>
+        </div>
+        <hr>
+        @* History *@
+        <div class="row">            
+            <div class="col">
+                <h4>History</h4>
+                @foreach (var history in Model.History.OrderByDescending(x => x.Created))
+                {
+                    <a asp-controller="TicketHistories" asp-action="Details" asp-route-id="@history.Id" class="text-dark text-decoration-underline">
+                        @if(history.Property is null)
+                        {
+                            <span>
+                                <strong>@history.User.FullName</strong>
+                            </span> 
+                            <span>created the ticket</span>
+                            <span>@history.Created.ToString("d") @history.Created.ToString("t")</span>
+                            <br>
+                        }
+                        else
+                        {
+                            <span>
+                                <strong>@history.User.FullName</strong>
+                            </span> 
+                            <span>updated the</span>
+                            <span>@history.Property</span>
+                            <span>@history.Created.ToString("d") @history.Created.ToString("t")</span>
+                            <br>
+                        }
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+<script type="text/javascript">  
+    const statusForm = document.getElementById("TicketStatusForm")
+    statusForm.addEventListener("change", () => statusForm.submit())
+
+    const priorityForm = document.getElementById("TicketPriorityForm")
+    priorityForm.addEventListener("change", () => priorityForm.submit())
+
+    const typeForm = document.getElementById("TicketTypeForm")
+    typeForm.addEventListener("change", () => typeForm.submit())
+    
+    const assigneeForm = document.getElementById("TicketAssigneeForm")
+    assigneeForm.addEventListener("change", () => assigneeForm.submit())
+
+    const description = document.getElementById("description")
+    const descriptionForm = document.getElementById("descriptionForm")
+    description.addEventListener("click", () => {
+        description.style.display = 'none'
+        descriptionForm.style.display = 'block'
+    })
+    const cancelDescriptionEdit = document.getElementById("cancelDescriptionEdit")
+    cancelDescriptionEdit.addEventListener("click", () => {
+        description.style.display = 'block'
+        descriptionForm.style.display = 'none'
+    })
+    
+    const title = document.getElementById("title")
+    const titleForm = document.getElementById("titleForm")
+    title.addEventListener("click", () => {
+        title.style.display = 'none'
+        titleForm.style.display = 'block'
+    })
+    const cancelTitleEdit = document.getElementById("cancelTitleEdit")
+    cancelTitleEdit.addEventListener("click", () => {
+        titleForm.style.display = 'none'
+        title.style.display = 'block'
+    })
+
+    const archiveForm = document.getElementById("TicketArchivedForm")
+    archiveForm.addEventListener("change", () => archiveForm.submit())
+</script>  

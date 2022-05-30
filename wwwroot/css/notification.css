@@ -1,0 +1,27 @@
+@media only screen and (max-width: 768px){        
+    #notifications {    
+        max-width: 60vw !important;
+    }
+}
+
+@media only screen and (max-width: 576px){        
+    #notifications {    
+        max-width: 95vw !important;
+        right: 2rem;
+        margin-left: 1rem;
+    }
+}
+
+.markNotificationAsRead {
+    border: none;
+    position: absolute; 
+    top: .5rem; 
+    right: .5rem; 
+    padding: 0 6px;
+}
+
+.noNotificationsMessage {
+    overflow: auto; 
+    color: gray; 
+    text-align: center;
+}

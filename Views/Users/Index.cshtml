@@ -1,0 +1,65 @@
+@model IEnumerable<TheBugTracker.Models.BTUser>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<style>
+    tr {
+        cursor: pointer;
+    }
+    thead{
+        cursor: auto;
+    }
+</style>
+
+<h1>Users (@Model.Count())</h1>
+@if(!_signInManager.IsSignedIn(User))
+{
+    <a class="btn btn-primary" asp-controller="Users" asp-action="Seed">Seed</a>     
+    <a class="btn btn-outline-primary" asp-controller="Users" asp-action="Unseed">Unseed</a>
+    <p><em>Seed data from <a href="https://randomuser.me/" target="_blank">randomuser.me</a></em></p>
+}
+
+@if(_signInManager.IsSignedIn(User))
+{
+    <p><a asp-controller="Invites" asp-action="Create" class="btn btn-primary">Send Invite</a></p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Email)</th>
+            <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+            <th>@Html.DisplayNameFor(model => model.LastName)</th>
+            <th>Company ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model) 
+        {
+            <tr id="@item.Id">
+                <td>@Html.DisplayFor(modelItem => item.Email)</td>
+                <td>@Html.DisplayFor(modelItem => item.FirstName)</td>
+                <td>@Html.DisplayFor(modelItem => item.LastName)</td>
+                <td>@item.CompanyId</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(() => {
+        let collection = document.getElementsByTagName("tr")
+        let rows = Array.from(collection);
+        rows.shift()
+
+        rows.forEach(row => {
+            row.addEventListener('click', e => {
+                window.location = `/Users/Profile/${row.id}`
+            })
+        })
+    })
+</script>

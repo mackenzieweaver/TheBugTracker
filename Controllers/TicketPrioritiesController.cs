@@ -2,45 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class TicketPrioritiesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTTicketHistoryService _historyService;
 
-        public TicketPrioritiesController(ApplicationDbContext context)
+        public TicketPrioritiesController(ApplicationDbContext context, IBTTicketHistoryService historyService)
         {
             _context = context;
+            _historyService = historyService;
         }
 
-        // GET: TicketPriorities
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
             return View(await _context.TicketPriorities.ToListAsync());
-        }
-
-        // GET: TicketPriorities/Details/5
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticketPriority = await _context.TicketPriorities
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (ticketPriority == null)
-            {
-                return NotFound();
-            }
-
-            return View(ticketPriority);
         }
 
         // GET: TicketPriorities/Create
@@ -48,10 +35,7 @@ namespace TheBugTracker.Controllers
         {
             return View();
         }
-
-        // POST: TicketPriorities/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name")] TicketPriority ticketPriority)
@@ -63,57 +47,22 @@ namespace TheBugTracker.Controllers
                 return RedirectToAction(nameof(Index));
             }
             return View(ticketPriority);
-        }
+        }        
 
-        // GET: TicketPriorities/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var ticketPriority = await _context.TicketPriorities.FindAsync(id);
-            if (ticketPriority == null)
-            {
-                return NotFound();
-            }
-            return View(ticketPriority);
-        }
-
-        // POST: TicketPriorities/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] TicketPriority ticketPriority)
+        public async Task<IActionResult> Edit(int id, int ticketId)
         {
-            if (id != ticketPriority.Id)
-            {
-                return NotFound();
-            }
+            var ticket = await _context.Tickets.FindAsync(ticketId);
+            var oldTicket = _historyService.DeepCopyTicket(ticket);
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(ticketPriority);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!TicketPriorityExists(ticketPriority.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(ticketPriority);
+            ticket.TicketPriorityId = id;
+            _context.Tickets.Update(ticket);
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            await _historyService.AddHistoryAsync(oldTicket, ticket, user.Id);
+            return RedirectToAction("Details", "Tickets", new { id = ticketId });
         }
 
         // GET: TicketPriorities/Delete/5

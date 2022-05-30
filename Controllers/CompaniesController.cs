@@ -2,45 +2,81 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
+    [Authorize]
     public class CompaniesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IBTCompanyInfoService _companyInfoService;
 
-        public CompaniesController(ApplicationDbContext context)
+        public CompaniesController(ApplicationDbContext context, IBTCompanyInfoService companyInfoService)
         {
             _context = context;
+            _companyInfoService = companyInfoService;
         }
 
-        // GET: Companies
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Companies.ToListAsync());
+            var companies = await _context.Companies
+                .Include(x => x.Projects)
+                .Include(x => x.Members)
+                .ToListAsync();
+            return View(companies);
         }
 
-        // GET: Companies/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [AllowAnonymous]
+        public async Task<IActionResult> Profile(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
+            if(user is not null) if(user.CompanyId != id) return NotFound();
 
             var company = await _context.Companies
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (company == null)
-            {
-                return NotFound();
-            }
+                .Include(x => x.Members)
+                .Include(x => x.Projects).ThenInclude(x => x.ProjectPriority)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            return View(new CompanyProfileViewModel { Company = company, Members = company.Members, Projects = company.Projects });
+        }
 
-            return View(company);
+        [AllowAnonymous]
+        public async Task<IActionResult> AddProjectToCompany(int companyId)
+        {
+            var projects = await _context.Projects.ToListAsync();
+            var projectsWithoutCompany = projects.Where(p => p.CompanyId == null).ToList();
+            var projectsNotAlreadyInCompany = projects.Where(p => p.CompanyId != companyId).ToList();
+
+            var project = projectsWithoutCompany.Count > 0 ? projectsWithoutCompany[(new Random()).Next(0, projectsWithoutCompany.Count)] :
+                projectsNotAlreadyInCompany[(new Random()).Next(0, projectsNotAlreadyInCompany.Count)];
+
+            project.CompanyId = companyId;
+            _context.Update(project);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Profile", new { id = companyId });
+        }
+        
+        [AllowAnonymous]
+        public async Task<IActionResult> AddMemberToCompany(int companyId)
+        {
+            var users = await _context.Users.ToListAsync();
+            var usersWithoutCompany = users.Where(u => u.CompanyId == null).ToList();
+            var usersNotAlreadyInCompany = users.Where(u => u.CompanyId != companyId).ToList();
+            
+            var user = usersWithoutCompany.Count > 0 ? usersWithoutCompany[(new Random()).Next(0, usersWithoutCompany.Count)] :
+                usersNotAlreadyInCompany[(new Random()).Next(0, usersNotAlreadyInCompany.Count)];
+                
+            user.CompanyId = companyId;
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Profile", new { id = companyId });
         }
 
         // GET: Companies/Create
@@ -48,10 +84,7 @@ namespace TheBugTracker.Controllers
         {
             return View();
         }
-
-        // POST: Companies/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Description")] Company company)
@@ -80,10 +113,7 @@ namespace TheBugTracker.Controllers
             }
             return View(company);
         }
-
-        // POST: Companies/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Company company)

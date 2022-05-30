@@ -1,26 +1,256 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using TheBugTracker.Data
 @inject SignInManager<BTUser> SignInManager
 @inject UserManager<BTUser> UserManager
+@inject ApplicationDbContext _context
+
+@{
+    BTUser user = null;
+    List<Notification> notifications = new();
+    if(SignInManager.IsSignedIn(User))
+    {
+        user = await UserManager.GetUserAsync(User);
+        notifications = _context.Notifications
+            .Where(x => x.RecipientId == user.Id)
+            .Include(x => x.Sender)
+            .ToList();
+    }
+}
+
+<style>
+    #bell:hover{
+        cursor: pointer;
+    }
+    #notificationCount{
+        position: absolute;
+        right: 6px;
+        top: -6px;
+        background-color: red;
+        border-radius: 50%;
+        color: white;
+        font-weight: bold;
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+    #notifications{
+        display: none;
+        position: fixed;
+        background-color: white;
+        z-index: 1;
+    }
+    .tab-pane {
+        max-height: 80vh;
+        max-width: 25vw;
+        overflow: auto;
+    }
+    .nav-tabs {
+        margin-left: 1rem; 
+        margin-right: 2rem;
+    }
+</style>
 
 <ul class="navbar-nav flex-column">
-@if (SignInManager.IsSignedIn(User))
-{
-    <li class="nav-item">
-        <a  class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Manage Account</a>
-    </li>
-    <li class="nav-item">
-        <form  class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-            <button  type="submit" class="nav-link btn btn-link text-dark">Logout</button>
-        </form>
-    </li>
-}
-else
-{
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
-    </li>
-}
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="nav-item">
+                <div class="row">
+                    <div class="col-auto">
+                        <a asp-controller="Users" asp-action="Profile" asp-route-id="@user.Id">
+                            <img style="border-radius: 50%; height: 75px;" src="@user.AvatarFileName" alt="" class="">
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a asp-controller="Users" asp-action="Profile" asp-route-id="@user.Id" class="nav-link text-dark p-0">
+                            <p class="m-0">Hi, @user.FirstName</p>
+                        </a>
+                        <form style="display: inline;" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                            <input value="Logout" type="submit" class="btn text-dark underlinep p-0" style="text-decoration: underline; margin-bottom: 6px;" />
+                        </form>
+                    </div>
+                    <div class="col-auto">
+                        <i id="bell" class="fas fa-bell fa-2x"></i>
+                        <span id="notificationCount">@notifications.Where(x => x.Viewed == false).Count().ToString()</span>                        
+                        <div id="notifications" class="shadow-lg border rounded">
+                            <div class="m-3 d-flex justify-content-between align-items-center">
+                                <h3>Notifications</h3>
+                                @if(notifications.Where(x => x.Viewed == false).Count() != 0)
+                                {
+                                    <a id="clearAll" asp-controller="Notifications" asp-action="MarkAllAsRead" asp-route-id="@user.Id" title="Mark all as read">clear</a>
+                                }
+                            </div>
+
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item">
+                                    <a id="unseen-notifications-tab-link" class="nav-link active" data-toggle="tab" href="#unseen-notifications" role="tab">New</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a id="seen-notifications-tab-link" class="nav-link" data-toggle="tab" href="#seen-notifications" role="tab">Read</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a id="all-notifications-tab-link" class="nav-link" data-toggle="tab" href="#all-notifications" role="tab">All</a>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="unseen-notifications" role="tabpanel">
+                                    @if(notifications.Where(x => x.Viewed == false).Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3">
+                                            <h5>No New Notifications!</h5>
+                                            <p>Click on another tab to see old notifications.</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        foreach (var notification in notifications.Where(x => x.Viewed == false).OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <div class="border m-3 p-3" style="overflow: auto; position: relative;">
+                                                    <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </a>
+                                                    <button title="Mark as Read" class="btn btn-outline-danger markNotificationAsRead" onclick="markAsRead(@notification.Id, this)">x</button>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="border m-3 p-3" style="overflow: auto; position: relative;">
+                                                    <a href="@notification.ReturnUrl" class="text-dark text-decoration-none" title="Go to Notification">
+                                                        <h5 class="mr-4">@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </a>
+                                                    <button title="Mark as Read" class="btn btn-outline-danger markNotificationAsRead" onclick="markAsRead(@notification.Id, this)">x</button>
+                                                </div>
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <div class="tab-pane fade" id="seen-notifications" role="tabpanel">
+                                    @if(notifications.Where(x => x.Viewed == true).Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                            <h5>No Old Notifications!</h5>
+                                            <p>Click on another tab to see all notifications.</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var notification in notifications.Where(x => x.Viewed == true).OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <div class="tab-pane fade" id="all-notifications" role="tabpanel">
+                                    @if(notifications.Count() == 0)
+                                    {
+                                        <div class="noNotificationsMessage m-3 p-3" style="overflow: auto; color: gray; text-align: center;">
+                                            <h5>No Notifications!</h5>
+                                            <p>Make some noise and you'll get some.</p>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var notification in notifications.OrderByDescending(x => x.Created))
+                                        {
+                                            if(notification.TicketId != null)
+                                            {
+                                                <a asp-controller="Tickets" asp-action="Details" asp-route-id="@notification.TicketId" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@notification.ReturnUrl" class="text-dark text-decoration-none">
+                                                    <div class="border m-3 p-3" style="overflow: auto;">
+                                                        <h5>@notification.Title</h5>
+                                                        <p class="mb-0">@notification.Message</p>
+                                                        <p class="mb-0" style="font-size: 12px; color: gray;">
+                                                            <span>At @notification.Created.ToString("t")</span> on <span>@notification.Created.ToString("d")</span>
+                                                        </p>
+                                                    </div>
+                                                </a>
+                                            }
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <hr>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Register">Register</a>
+            <hr>
+        </li>
+    }
 </ul>
+
+<script>
+    $(document).ready(() => {
+        const bell = document.getElementById('bell')
+        const notifications = document.getElementById('notifications')
+
+        bell.addEventListener('click', (e) => {
+            e.stopPropagation()
+            if(notifications.style.display == 'block') notifications.style.display = 'none' 
+            else notifications.style.display = 'block'
+        })
+        
+        document.addEventListener('click', (e) => {
+            // don't close notifications if click is inside the tab
+            if(e.target.closest('#notifications') != null) return
+            if(notifications.style.display == 'block') notifications.style.display = 'none'
+        })
+
+        const clearAll = document.getElementById('clearAll')
+        document.getElementById('unseen-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'block')
+        document.getElementById('seen-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'none')
+        document.getElementById('all-notifications-tab-link').addEventListener('click', () => clearAll.style.display = 'none')
+    })
+</script>

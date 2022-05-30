@@ -323,6 +323,33 @@ namespace TheBugTracker.data.migrations
                     b.ToTable("Invites");
                 });
 
+            modelBuilder.Entity("TheBugTracker.Models.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<DateTimeOffset>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FromUserId")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Seen")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Text")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToUserId")
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("TheBugTracker.Models.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -722,7 +749,7 @@ namespace TheBugTracker.data.migrations
             modelBuilder.Entity("TheBugTracker.Models.Invite", b =>
                 {
                     b.HasOne("TheBugTracker.Models.Company", "Company")
-                        .WithMany()
+                        .WithMany("Invites")
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -903,6 +930,8 @@ namespace TheBugTracker.data.migrations
 
             modelBuilder.Entity("TheBugTracker.Models.Company", b =>
                 {
+                    b.Navigation("Invites");
+
                     b.Navigation("Members");
 
                     b.Navigation("Projects");
