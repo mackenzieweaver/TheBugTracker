@@ -30,6 +30,18 @@ namespace TheBugTracker.Controllers
                 .ToListAsync();
             return View(notifications);
         }
+        
+        public async Task<IActionResult> MarkAllAsRead(string id)
+        {
+            var notifications = await _context.Notifications.Where(x => x.RecipientId == id).ToListAsync();
+            foreach(var n in notifications)
+            {
+                n.Viewed = true;
+                _context.Update(n);
+            }
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Home");
+        }
 
         public async Task<IActionResult> Details(int? id)
         {

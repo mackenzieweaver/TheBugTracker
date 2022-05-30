@@ -1,0 +1,28 @@
+@using TheBugTracker.Models
+@model CallerViewModel
+
+hi you're on the rtc index page
+<br />
+
+@foreach(var user in Model.Users)
+{
+    <button id="@user.Id" data-callerid="@Model.CallerId" 
+        onclick="call(this.id, this.dataset.callerid)">
+        Call @user.FullName
+    </button>
+    <br />
+}
+
+<h3>Local Video</h3>
+<select id="cameras"></select>
+<div id="selectedDeviceIdEl"></div> 
+<hr />
+<video id="localVideo" autoplay playsinline></video>
+<br />
+
+<h3>Remote Video</h3>
+<hr />
+<video id="remoteVideo" autoplay playsinline></video>
+ 
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/genericCall.js"></script>

@@ -45,6 +45,11 @@ namespace TheBugTracker.Controllers
             return View("Users", model);
         }
         
+        public IActionResult Chat()
+        {
+            return View();
+        }
+        
         public async Task<IActionResult> SeedCompanies([FromQuery] int number = defaultSeedNumber)
         {
             await _seedService.SeedCompanies(number);
