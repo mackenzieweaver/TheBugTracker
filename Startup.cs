@@ -83,6 +83,7 @@ namespace TheBugTracker
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
                 endpoints.MapHub<ChatHub>("/chatHub");
+                endpoints.MapHub<CallHub>("/callHub");
             });
         }
     }
