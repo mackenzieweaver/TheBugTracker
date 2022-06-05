@@ -13,6 +13,7 @@ using TheBugTracker.Services;
 using TheBugTracker.Services.Interfaces;
 using Npgsql;
 using System;
+using TheBugTracker.Services.Factories;
 
 namespace TheBugTracker
 {
@@ -60,7 +61,8 @@ namespace TheBugTracker
             services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddIdentity<BTUser, IdentityRole>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>()  
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddClaimsPrincipalFactory<BTUserClaimsPrincipalFactory>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
                 
