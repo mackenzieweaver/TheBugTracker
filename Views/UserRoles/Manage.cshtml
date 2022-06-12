@@ -1,0 +1,22 @@
+@using TheBugTracker.Models.ViewModels
+@model List<ManageUserRolesViewModel>
+
+<h1>Manage User Roles</h1>
+<hr />
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col">
+            <div class="border p-3 h-100">
+                <form method=post>
+                    <input type="hidden" name="userId" value="@item.BTUser.Id" />
+                    <p>Roles for @item.BTUser.FullName</p>
+                    <select class="w-100" size="@item.Roles.Count()" name="selectedRoles" 
+                        asp-items="@item.Roles" multiple>
+                    </select>
+                    <input type="submit" value="Save" />
+                </form>
+            </div>
+        </div>
+    }
+</div>

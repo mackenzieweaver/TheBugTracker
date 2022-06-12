@@ -34,6 +34,11 @@ namespace TheBugTracker.Services
             return await _roleManager.GetRoleNameAsync(role);
         }
 
+        public async Task<List<IdentityRole>> GetRolesAsync()
+        {
+            return await _context.Roles.ToListAsync();
+        }
+
         public async Task<IEnumerable<string>> GetUserRolesAsync(BTUser user)
         {
             return await _userManager.GetRolesAsync(user);
