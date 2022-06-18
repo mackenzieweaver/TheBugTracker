@@ -75,6 +75,7 @@ namespace TheBugTracker
             services.AddScoped<IBTInviteService, BTInviteService>();
             services.AddScoped<IBTFileService, BTFileService>();
             services.AddScoped<ISeedService, SeedService>();
+            services.AddScoped<IBTLookupService, BTLookupService>();
             
             services.AddScoped<IEmailSender, BTEmailService>();
             services.Configure<MailSettings>(Configuration.GetSection("MailSettings"));
