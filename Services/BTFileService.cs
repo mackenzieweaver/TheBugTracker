@@ -10,7 +10,8 @@ namespace TheBugTracker.Services
     public class BTFileService : IBTFileService
     {
         public string ConvertByteArrayToFile(byte[] fileData, string extension)
-        {            
+        {
+            if(fileData == null) return "";
             return $"data:{extension};base64,{Convert.ToBase64String(fileData)}";
         }
 
