@@ -30,21 +30,9 @@ namespace TheBugTracker.Services
 
         public async Task<bool> AddProjectManagerAsync(string userId, int projectId)
         {
-            // If project has a manager, remove him
-            BTUser pm = await GetProjectManagerAsync(projectId);
-            if(pm is not null) await RemoveProjectManagerAsync(projectId);
-
-            // If new the user is in the role project manager, then add him to project
+            await AddUserToProjectAsync(userId, projectId);
             BTUser user = await _context.Users.FindAsync(userId);
-            if(await _rolesService.IsUserInRoleAsync(user, Roles.ProjectManager.ToString()))
-            {
-                await AddUserToProjectAsync(userId, projectId);
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return await _rolesService.AddUserToRoleAsync(user, Roles.ProjectManager.ToString());
         }
 
         public async Task<bool> AddUserToProjectAsync(string userId, int projectId)

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using TheBugTracker.Data;
 using TheBugTracker.Extensions;
 using TheBugTracker.Models;
+using TheBugTracker.Models.Enums;
 using TheBugTracker.Models.ViewModels;
 using TheBugTracker.Services.Interfaces;
 
@@ -20,12 +21,16 @@ namespace TheBugTracker.Controllers
         private readonly ApplicationDbContext _context;
         private readonly IBTRolesService _rolesService;
         private readonly IBTLookupService _lookupService;
+        private readonly IBTFileService _fileService;
+        private readonly IBTProjectService _projectService;
 
-        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService)
+        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService, IBTFileService fileService, IBTProjectService projectService)
         {
             _context = context;
             _rolesService = rolesService;
             _lookupService = lookupService;
+            _fileService = fileService;
+            _projectService = projectService;
         }
 
         [AllowAnonymous]
@@ -77,7 +82,7 @@ namespace TheBugTracker.Controllers
             int companyId = User.Identity.GetCompanyId().Value;
             AddProjectWithPMViewModel model = new()
             {
-                PMList = new SelectList(await _rolesService.GetUsersInRoleAsync("Project Manager", companyId), "Id", "FullName"),
+                PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(Roles.ProjectManager.ToString(), companyId), "Id", "FullName"),
                 PriorityList = new SelectList(await _lookupService.GetProjectPrioritiesAsync(), "Id", "Name")
             };
             return View(model);
@@ -85,17 +90,24 @@ namespace TheBugTracker.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
+        public async Task<IActionResult> Create(AddProjectWithPMViewModel model)
         {
-            if (ModelState.IsValid)
+            int companyId = User.Identity.GetCompanyId().Value;
+            var file = model.Project.ImageFormFile;
+            if(file != null)
             {
-                _context.Add(project);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                model.Project.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(file);
+                model.Project.ImageFileName = file.FileName;
+                model.Project.ImageContentType = file.ContentType;
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
-            return View(project);
+            model.Project.CompanyId = companyId;
+            model.Project.ProjectPriorityId = model.ProjectPriority;
+            await _projectService.AddNewProjectAsync(model.Project);
+            if(model.PMId is not null)
+            {
+                await _projectService.AddProjectManagerAsync(model.PMId, model.Project.Id);
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Edit(int? id)
