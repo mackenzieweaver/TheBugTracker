@@ -94,7 +94,7 @@ namespace TheBugTracker.Controllers
         {
             int companyId = User.Identity.GetCompanyId().Value;
             var file = model.Project.ImageFormFile;
-            if(file != null)
+            if(file is not null)
             {
                 model.Project.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(file);
                 model.Project.ImageFileName = file.FileName;
@@ -112,53 +112,40 @@ namespace TheBugTracker.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id is null) return NotFound();
 
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null)
+            int companyId = User.Identity.GetCompanyId().Value;
+            var project = await _projectService.GetProjectByIdAsync(id.Value, companyId);
+            if (project is null) return NotFound();
+            
+            AddProjectWithPMViewModel model = new()
             {
-                return NotFound();
-            }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
-            return View(project);
+                Project = project,
+                PMList = new SelectList(await _rolesService.GetUsersInRoleAsync(Roles.ProjectManager.ToString(), companyId), "Id", "FullName"),
+                PriorityList = new SelectList(await _lookupService.GetProjectPrioritiesAsync(), "Id", "Name"),
+                ProjectPriority = project.ProjectPriorityId.Value
+            };
+            return View(model);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CompanyId,Name,Description,StartDate,EndDate,ProjectPriorityId,ImageFileName,ImageFileData,ImageContentType,Archived")] Project project)
+        public async Task<IActionResult> Edit(AddProjectWithPMViewModel model)
         {
-            if (id != project.Id)
+            var file = model.Project.ImageFormFile;
+            if(file is not null)
             {
-                return NotFound();
+                model.Project.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(file);
+                model.Project.ImageFileName = file.FileName;
+                model.Project.ImageContentType = file.ContentType;
             }
-
-            if (ModelState.IsValid)
+            model.Project.ProjectPriorityId = model.ProjectPriority;
+            await _projectService.UpdateProjectAsync(model.Project);
+            if(model.PMId is not null)
             {
-                try
-                {
-                    _context.Update(project);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ProjectExists(project.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                await _projectService.AddProjectManagerAsync(model.PMId, model.Project.Id);
             }
-            ViewData["CompanyId"] = new SelectList(_context.Companies, "Id", "Name", project.CompanyId);
-            ViewData["ProjectPriorityId"] = new SelectList(_context.ProjectPriorities, "Id", "Id", project.ProjectPriorityId);
-            return View(project);
+            return RedirectToAction(nameof(Index));
         }
 
         private bool ProjectExists(int id)
