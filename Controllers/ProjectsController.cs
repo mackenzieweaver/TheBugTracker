@@ -62,19 +62,11 @@ namespace TheBugTracker.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            var project = await _context.Projects
-                .Include(p => p.Company)
-                .Include(p => p.Tickets).ThenInclude(x => x.TicketType)
-                .Include(p => p.Tickets).ThenInclude(x => x.TicketStatus)
-                .Include(p => p.Tickets).ThenInclude(x => x.TicketPriority)
-                .Include(p => p.Members)
-                .Include(p => p.ProjectPriority)
-                .FirstOrDefaultAsync(m => m.Id == id);
-
-            if (project == null) return NotFound();
+            Project p = await _projectService.GetProjectByIdAsync(id, User.Identity.GetCompanyId().Value);
+            if (p is null) return NotFound();
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
-            if(user is not null) if(project.CompanyId != user.CompanyId) return NotFound();
-            return View(project);
+            if(user is not null) if(p.CompanyId != user.CompanyId) return NotFound();
+            return View(p);
         }
 
         public async Task<IActionResult> Create()
@@ -151,6 +143,40 @@ namespace TheBugTracker.Controllers
         private bool ProjectExists(int id)
         {
             return _context.Projects.Any(e => e.Id == id);
+        }
+
+        public async Task<IActionResult> Archive(int? id)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id.Value, companyId);
+            return View(p);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Archive(int Id)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(Id, companyId);
+            await _projectService.ArchiveProjectAsync(p);
+            return RedirectToAction(nameof(Index));
+        }
+        
+        public async Task<IActionResult> Restore(int? id)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id.Value, companyId);
+            return View(p);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Restore(int Id)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(Id, companyId);
+            await _projectService.RestoreProjectAsync(p);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

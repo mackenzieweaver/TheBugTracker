@@ -10,6 +10,7 @@ namespace TheBugTracker.Services.Interfaces
         Task<bool> AddProjectManagerAsync(string userId, int projectId);
         Task<bool> AddUserToProjectAsync(string userId, int projectId);
         Task ArchiveProjectAsync(Project project);
+        Task RestoreProjectAsync(Project project);
         Task<List<Project>> GetAllProjectsByCompany(int companyId);
         Task<List<Project>> GetAllProjectsByPriority(int companyId, string priorityName);
         Task<List<BTUser>> GetAllProjectMembersExceptPMAsync(int projectId);

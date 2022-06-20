@@ -58,6 +58,26 @@ namespace TheBugTracker.Services
         {
             project.Archived = true;
             await UpdateProjectAsync(project);
+
+            foreach(var ticket in project.Tickets)
+            {
+                ticket.ArchivedByProject = true;
+                _context.Update(ticket);
+                await _context.SaveChangesAsync();
+            }
+        }
+       
+        public async Task RestoreProjectAsync(Project project)
+        {
+            project.Archived = false;
+            await UpdateProjectAsync(project);
+
+            foreach(var ticket in project.Tickets)
+            {
+                ticket.ArchivedByProject = false;
+                _context.Update(ticket);
+                await _context.SaveChangesAsync();
+            }
         }
 
         public async Task<List<BTUser>> GetAllProjectMembersExceptPMAsync(int projectId)
