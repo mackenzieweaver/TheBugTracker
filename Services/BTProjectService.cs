@@ -202,6 +202,14 @@ namespace TheBugTracker.Services
                 .ToListAsync();
             return users.Where(u => u.CompanyId == companyId).ToList();
         }
+        
+        public async Task<List<BTUser>> GetUsersOnProjectAsync(int projectId, int companyId)
+        {
+            var users = await _context.Users
+                .Where(u => u.Projects.Any(p => p.Id == projectId))
+                .ToListAsync();
+            return users.Where(u => u.CompanyId == companyId).ToList();
+        }
 
         public async Task<bool> IsUserOnProjectAsync(string userId, int projectId)
         {

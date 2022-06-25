@@ -1,0 +1,14 @@
+@using TheBugTracker.Models.ViewModels
+@model AddUsersToProjectViewModel
+
+<form method="post" asp-action="AddUsersToProject">
+    <input type="hidden" asp-for="ProjectId" />
+    <select 
+        size="@Model.Users.Count()"
+        asp-for="@Model.UserIds"
+        asp-items="@Model.Users"
+        multiple
+    >
+    </select>
+    <input type="submit" value="Save">
+</form>

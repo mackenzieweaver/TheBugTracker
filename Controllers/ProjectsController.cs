@@ -23,14 +23,16 @@ namespace TheBugTracker.Controllers
         private readonly IBTLookupService _lookupService;
         private readonly IBTFileService _fileService;
         private readonly IBTProjectService _projectService;
+        private readonly IBTCompanyInfoService _companyService;
 
-        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService, IBTFileService fileService, IBTProjectService projectService)
+        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService, IBTFileService fileService, IBTProjectService projectService, IBTCompanyInfoService companyService)
         {
             _context = context;
             _rolesService = rolesService;
             _lookupService = lookupService;
             _fileService = fileService;
             _projectService = projectService;
+            _companyService = companyService;
         }
 
         [AllowAnonymous]
@@ -177,6 +179,37 @@ namespace TheBugTracker.Controllers
             Project p = await _projectService.GetProjectByIdAsync(Id, companyId);
             await _projectService.RestoreProjectAsync(p);
             return RedirectToAction(nameof(Index));
+        }
+        
+        public async Task<IActionResult> AddUsersToProject(int Id)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            var users = await _companyService.GetAllMembersAsync(companyId);
+            var usersOnProject = await _projectService.GetUsersOnProjectAsync(Id, companyId);
+            
+            AddUsersToProjectViewModel vm = new() {
+                ProjectId = Id,
+                Users = new MultiSelectList(users, "Id", "FullName", usersOnProject),
+                UserIds = usersOnProject.Select(user => user.Id).ToList()
+            };
+            return View(vm);
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddUsersToProject(AddUsersToProjectViewModel vm)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            var users = await _companyService.GetAllMembersAsync(companyId);
+            foreach (var id in users.Select(u => u.Id))
+            {
+                await _projectService.RemoveUserFromProjectAsync(id, vm.ProjectId);
+            }
+            foreach (var id in vm.UserIds)
+            {
+                await _projectService.AddUserToProjectAsync(id, vm.ProjectId);
+            }
+            return RedirectToAction("Details", new { id = vm.ProjectId });
         }
     }
 }

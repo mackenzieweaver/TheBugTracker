@@ -16,6 +16,7 @@
         }
         
         <h1>Project: @Model.Name</h1>
+        <h6>ID: @Model.Id</h6>
         <div class="row">
             <div class="col-auto">
                 <p>Start: @Model.StartDate.ToString("d")</p>
@@ -28,7 +29,6 @@
         <h5>Archived: @Model.Archived</h5>
         <h6>Company: <a asp-controller="Companies" asp-action="Profile" asp-route-id="@Model.CompanyId">@Model.Company.Name</a></h6>
         <p>@Model.Description</p>
-        <br />
         <a asp-action="Edit" asp-route-id="@Model.Id">Edit Project</a>
         <br />
         @if(Model.Archived){
@@ -44,5 +44,19 @@
                 <input type="submit" value="Add Ticket" class="btn btn-sm btn-outline-primary ml-3">
             </form>
         }
+        @if(Model.Members.Count == 0) {
+            <p class="mt-3"><em>No users currently assigned to project</em></p>
+        } else {
+            <p class="mt-3">Users currently assigned to project</p>
+            <ul>
+                @foreach (var user in Model.Members)
+                {
+                    <li>@user.FullName</li>
+                }
+            </ul>
+        }
+        <a asp-action="AddUsersToProject" asp-route-id="@Model.Id">
+            Assign users
+        </a>
     </div>
 </div>

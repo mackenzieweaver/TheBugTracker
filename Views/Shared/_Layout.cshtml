@@ -57,6 +57,8 @@
                     <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
                     <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
                     @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
+                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
+                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
                 </ul>
             </div>
         </nav>
