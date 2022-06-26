@@ -6,57 +6,283 @@
     ViewData["Title"] = "Project Details";
 }
 
+<style>
+    #name:hover, #description:hover {
+        background-color: rgba(240, 240, 240, 1);
+        cursor: pointer;
+    }
+    #imagePreview:hover {
+        cursor: pointer;
+    }
+    .tab-pane {
+        max-width: 100% !important;
+    }
+    tr {
+        cursor: pointer;
+    }
+    thead{
+        cursor: auto;
+    }
+    th{
+        border-top: none !important;
+    }
+</style>
+
 <div class="row">
     <div class="col">
-        @if(Model.ImageFileData is null)
-        {
-            <img style="max-height: 100px; max-width: 100px;" src="@Model.ImageFileName" alt="" />
-        } else {
-            <img style="max-height: 100px; max-width: 100px;" src="data:image/*;base64,@(Convert.ToBase64String(Model.ImageFileData))" />
-        }
-        
-        <h1>Project: @Model.Name</h1>
-        <h6>ID: @Model.Id</h6>
+
         <div class="row">
             <div class="col-auto">
-                <p>Start: @Model.StartDate.ToString("d")</p>
+                @if (Model.ImageFileData is null)
+                {
+                    <img id="imagePreview" style="display: inline-block; max-height: 100px; max-width: 100px;"
+                    src="@Model.ImageFileName" alt="" />
+                    <form class="d-none" id="ProjectImageForm" asp-controller="Projects" asp-action="EditImage"
+                    method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input asp-for="ImageFormFile" class="form-control" type="file" accept=".png, .jpg, .jpeg, .gif" />
+                    </form>
+                }
+                else
+                {
+                    <img id="imagePreview" style="display: inline-block; max-height: 100px; max-width: 100px;"
+                    src="data:image/*;base64,@(Convert.ToBase64String(Model.ImageFileData))" />
+                    <form class="d-none" id="ProjectImageForm" asp-controller="Projects" asp-action="EditImage"
+                    method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input asp-for="ImageFormFile" class="form-control" type="file" accept=".png, .jpg, .jpeg, .gif" />
+                    </form>
+                }
             </div>
-            <div class="col-auto">
-                <p>End: @Model.EndDate.ToString("d")</p>
+            <div class="col">
+                <h1 id="name">Project: @Model.Name</h1>
+                <form id="nameForm" asp-controller="Projects" asp-action="EditName" style="display: none;">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input name="name" autofocus value="@Model.Name"
+                        style="width: 65%; margin-bottom: 8px; padding: 8px;" />
+                    <input class="btn btn-primary" type="submit" value="Save" />
+                    <button class="btn btn-outline-primary" id="cancelNameEdit">Cancel</button>
+                </form>
+                <strong>ID: @Model.Id,</strong>
+                <strong class="mt-3"><a asp-controller="Companies" asp-action="Profile"
+                        asp-route-id="@Model.CompanyId">Company</a>: @Model.Company.Name</strong>
+            </div>
+            @if (!_signInManager.IsSignedIn(User))
+            {
+                <div class="col">
+                    <form asp-action="AddTicketToProject">
+                        <input type="hidden" name="projectId" value="@Model.Id">
+                        <input type="submit" value="Add Ticket" class="btn btn-sm btn-outline-primary ml-3">
+                    </form>
+                </div>
+            }
+        </div>
+        <hr />
+
+        <div class="row">
+            <div class="col border-right">
+                <h6 class="mt-3">Description</h6>
+                <div class="border p-3">
+                    <p id="description" class="">@Model.Description</p>
+                    <form id="descriptionForm" asp-controller="Projects" asp-action="EditDescription"
+                        style="display: none;">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input name="description" autofocus value="@Model.Description"
+                            style="width: 65%; margin-bottom: 8px; padding: 8px;" />
+                        <input class="btn btn-primary" type="submit" value="Save" />
+                        <button class="btn btn-outline-primary" id="cancelDescriptionEdit">Cancel</button>
+                    </form>
+                </div>
+
+                <ul class="nav nav-tabs mt-5 mx-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tickets">Tickets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#users">Users</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="tickets">
+                        <table class="table table-responsive">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Title</th>
+                                    <th>Created</th>
+                                    <th>Updated</th>
+                                    <th>Archived</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Owner</th>
+                                    <th>Developer</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ticket in Model.Tickets)
+                                {
+                                    <tr id="@ticket.Id">
+                                        <td>@ticket.Id</td>
+                                        <td>@ticket.Title</td>
+                                        <td>@ticket.Created.ToString("d")</td>
+                                        <td>@ticket.Updated.Value.ToString("d")</td>
+                                        <td>@ticket.Archived</td>
+                                        <td>@ticket.TicketType.Name</td>
+                                        <td>@ticket.TicketStatus.Name</td>
+                                        <td>@ticket.TicketPriority.Name</td>
+                                        <td>@ticket.OwnerUser.FullName</td>
+                                        <td>@ticket.DeveloperUser.FullName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="tab-pane fade" id="users">
+                        <a asp-action="AddUsersToProject" asp-route-id="@Model.Id">
+                            Assign users
+                        </a>
+                        @if (Model.Members.Count == 0)
+                        {
+                            <p class="mt-3"><em>No users currently assigned to project</em></p>
+                        }
+                        else
+                        {
+                            <p class="mt-3">Users currently assigned to project</p>
+                            <ul>
+                                @foreach (var user in Model.Members)
+                                {
+                                    <li>@user.FullName</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4">
+                <div class="row">
+                    <div class="col">
+                        Priority:
+                    </div>
+                    <div class="col mb-2">
+                        <form class="d-inline" id="ProjectPriorityForm" asp-controller="Projects"
+                            asp-action="EditPriority" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <select name="priorityId" asp-items="ViewBag.PriorityList">
+                                <option value="@Model.ProjectPriority.Name">@Model.ProjectPriority.Name</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        Archived:
+                    </div>
+                    <div class="col mb-2">
+                        <form class="d-inline" id="ProjectArchivedForm" asp-controller="Projects"
+                            asp-action="EditArchived">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <select name="archive">
+                                <option value="@Model.Archived">@Model.Archived</option>
+                                @if (Model.Archived == false)
+                                {
+                                    <option value="true">True</option>
+                                }
+                                else
+                                {
+                                    <option value="false">False</option>
+                                }
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        Start:
+                    </div>
+                    <div class="col mb-2">
+                        <form class="d-inline" id="ProjectStartDateForm" asp-controller="Projects"
+                            asp-action="EditStartDate" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input asp-for="StartDate" class="form-control" />
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        End:
+                    </div>
+                    <div class="col mb-2">
+                        <form class="d-inline" id="ProjectEndDateForm" asp-controller="Projects"
+                            asp-action="EditEndDate" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input asp-for="EndDate" class="form-control" />
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
-        <h4>Priority: @Model.ProjectPriority.Name</h4>
-        <h5>Archived: @Model.Archived</h5>
-        <h6>Company: <a asp-controller="Companies" asp-action="Profile" asp-route-id="@Model.CompanyId">@Model.Company.Name</a></h6>
-        <p>@Model.Description</p>
-        <a asp-action="Edit" asp-route-id="@Model.Id">Edit Project</a>
-        <br />
-        @if(Model.Archived){
-            <a asp-action="Restore" asp-route-id="@Model.Id">Restore</a>
-        } else {
-            <a asp-action="Archive" asp-route-id="@Model.Id">Archive</a>
-        }
-        <br />
-        @if(!_signInManager.IsSignedIn(User))
-        {
-            <form asp-action="AddTicketToProject">
-                <input type="hidden" name="projectId" value="@Model.Id">
-                <input type="submit" value="Add Ticket" class="btn btn-sm btn-outline-primary ml-3">
-            </form>
-        }
-        @if(Model.Members.Count == 0) {
-            <p class="mt-3"><em>No users currently assigned to project</em></p>
-        } else {
-            <p class="mt-3">Users currently assigned to project</p>
-            <ul>
-                @foreach (var user in Model.Members)
-                {
-                    <li>@user.FullName</li>
-                }
-            </ul>
-        }
-        <a asp-action="AddUsersToProject" asp-route-id="@Model.Id">
-            Assign users
-        </a>
     </div>
 </div>
+
+<script type="text/javascript">
+    const name = document.getElementById("name")
+    const nameForm = document.getElementById("nameForm")
+    name.addEventListener("click", () => {
+        name.style.display = 'none'
+        nameForm.style.display = 'block'
+    })
+    const cancelNameEdit = document.getElementById("cancelNameEdit")
+    cancelNameEdit.addEventListener("click", (e) => {
+        e.preventDefault()
+        nameForm.style.display = 'none'
+        name.style.display = 'block'
+    })
+
+    const description = document.getElementById("description")
+    const descriptionForm = document.getElementById("descriptionForm")
+    description.addEventListener("click", () => {
+        description.style.display = 'none'
+        descriptionForm.style.display = 'block'
+    })
+    const cancelDescriptionEdit = document.getElementById("cancelDescriptionEdit")
+    cancelDescriptionEdit.addEventListener("click", (e) => {
+        e.preventDefault()
+        descriptionForm.style.display = 'none'
+        description.style.display = 'block'
+    })
+
+    const ProjectPriorityForm = document.getElementById("ProjectPriorityForm")
+    ProjectPriorityForm.addEventListener("change", () => ProjectPriorityForm.submit())
+
+    const ProjectArchivedForm = document.getElementById("ProjectArchivedForm")
+    ProjectArchivedForm.addEventListener("change", () => ProjectArchivedForm.submit())
+
+    const ProjectStartDateForm = document.getElementById("ProjectStartDateForm")
+    ProjectStartDateForm.addEventListener("change", () => ProjectStartDateForm.submit())
+
+    const ProjectEndDateForm = document.getElementById("ProjectEndDateForm")
+    ProjectEndDateForm.addEventListener("change", () => ProjectEndDateForm.submit())
+
+    const imagePreview = document.getElementById("imagePreview")
+    const ImageFormFile = document.getElementById("ImageFormFile")
+    const ProjectImageForm = document.getElementById("ProjectImageForm")
+    imagePreview.addEventListener("click", () => ImageFormFile.click())
+    ImageFormFile.addEventListener("change", () => ProjectImageForm.submit())
+</script>
+
+<script>
+    $(document).ready(() => {
+        let collection = document.getElementsByTagName("tr")
+        let rows = Array.from(collection);
+        rows.shift()
+
+        rows.forEach(row => {
+            row.addEventListener('click', e => {
+                window.location = `/Tickets/Details/${row.id}`
+            })
+        })
+    })
+</script>

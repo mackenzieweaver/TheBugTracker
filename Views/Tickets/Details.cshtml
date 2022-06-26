@@ -21,7 +21,6 @@
 <form id="titleForm" asp-controller="Tickets" asp-action="EditTitle" style="display: none;">
     <input type="hidden" value="@Model.Id" name="id" />
     <input name="title" style="width: 65%; margin-bottom: 8px; padding: 8px;" value="@Model.Title" />
-    <br>
     <input class="btn btn-primary" type="submit" value="Save" />
     <button class="btn btn-outline-primary" id="cancelTitleEdit">Cancel</button>
 </form>

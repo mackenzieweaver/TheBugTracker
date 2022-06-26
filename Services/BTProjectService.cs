@@ -141,6 +141,11 @@ namespace TheBugTracker.Services
                 .Include(p => p.ProjectPriority)
                 .Include(p => p.Members)
                 .Include(p => p.Tickets)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketType)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketStatus)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
+                .Include(p => p.Tickets).ThenInclude(t => t.OwnerUser)
+                .Include(p => p.Tickets).ThenInclude(t => t.DeveloperUser)
                 .FirstOrDefaultAsync(p => p.Id == projectId);
         }
 

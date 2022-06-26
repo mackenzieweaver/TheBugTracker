@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -68,6 +69,7 @@ namespace TheBugTracker.Controllers
             if (p is null) return NotFound();
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
             if(user is not null) if(p.CompanyId != user.CompanyId) return NotFound();
+            ViewData["PriorityList"] = new SelectList(_context.ProjectPriorities.Where(x => x.Id != p.ProjectPriorityId), "Id", "Name");
             return View(p);
         }
 
@@ -210,6 +212,85 @@ namespace TheBugTracker.Controllers
                 await _projectService.AddUserToProjectAsync(id, vm.ProjectId);
             }
             return RedirectToAction("Details", new { id = vm.ProjectId });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditName(int id, string name)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.Name = name;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditDescription(int id, string description)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.Description = description;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditPriority(int id, int priorityId)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.ProjectPriorityId = priorityId;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditArchived(int id, bool archive)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.Archived = archive;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditStartDate(int id, DateTimeOffset StartDate)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.StartDate = StartDate;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditEndDate(int id, DateTimeOffset EndDate)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.EndDate = EndDate;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditImage(int id, IFormFile ImageFormFile)
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            Project p = await _projectService.GetProjectByIdAsync(id, companyId);
+            p.ImageFileData = await _fileService.ConvertFileToByteArrayAsync(ImageFormFile);
+            p.ImageFileName = ImageFormFile.FileName;
+            p.ImageContentType = ImageFormFile.ContentType;
+            await _projectService.UpdateProjectAsync(p);
+            return RedirectToAction("Details", new { id });
         }
     }
 }
