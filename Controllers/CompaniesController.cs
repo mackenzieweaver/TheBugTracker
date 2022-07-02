@@ -64,7 +64,7 @@ namespace TheBugTracker.Controllers
         }
         
         [AllowAnonymous]
-        public async Task<IActionResult> AddMemberToCompany(int companyId)
+        public async Task<IActionResult> AddMemberToCompany(int? companyId)
         {
             var users = await _context.Users.ToListAsync();
             var usersWithoutCompany = users.Where(u => u.CompanyId == null).ToList();
@@ -73,7 +73,7 @@ namespace TheBugTracker.Controllers
             var user = usersWithoutCompany.Count > 0 ? usersWithoutCompany[(new Random()).Next(0, usersWithoutCompany.Count)] :
                 usersNotAlreadyInCompany[(new Random()).Next(0, usersNotAlreadyInCompany.Count)];
                 
-            user.CompanyId = companyId;
+            user.CompanyId = companyId.Value;
             _context.Update(user);
             await _context.SaveChangesAsync();
             return RedirectToAction("Profile", new { id = companyId });
