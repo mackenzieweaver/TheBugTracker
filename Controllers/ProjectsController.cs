@@ -65,7 +65,12 @@ namespace TheBugTracker.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Details(int id)
         {
-            Project p = await _projectService.GetProjectByIdAsync(id, User.Identity.GetCompanyId().Value);
+            var p = await _context.Projects.FindAsync(id);
+            int? companyId = User.Identity.GetCompanyId();
+            if(companyId == null)
+                p = await _projectService.GetProjectByIdAsync(id, p.CompanyId.Value);
+            else
+                p = await _projectService.GetProjectByIdAsync(id, companyId.Value);
             if (p is null) return NotFound();
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
             if(user is not null) if(p.CompanyId != user.CompanyId) return NotFound();
