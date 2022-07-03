@@ -1,0 +1,100 @@
+@model IEnumerable<TheBugTracker.Models.Project>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<BTUser> _signInManager
+
+@{
+    ViewData["Title"] = "My Projects";
+}
+
+<style>
+    tr {
+        cursor: pointer;
+    }
+    thead{
+        cursor: auto;
+    }
+</style>
+
+<h1>Projects (@Model.Count())</h1>
+<select id="actions">
+    <option style="display: none;">Actions</option>
+    <option value="/ProjectPriorities">Edit Priorities</option>
+    @if(!_signInManager.IsSignedIn(User))
+    {
+        <option value="/Home/SeedProjects">Seed More Projects</option>
+        <option value="/Home/UnseedProjects">Unseed Projects</option>
+    }
+</select>
+
+@if(!_signInManager.IsSignedIn(User))
+{
+    <p><em>Seed data from <a href="https://github.com/marketplace?type=apps" target="_blank">github</a></em></p>
+}
+
+@if(_signInManager.IsSignedIn(User))
+{
+    <p><a asp-action="Create" class="btn btn-primary mt-3">Create New</a></p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Company)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ProjectPriority)
+            </th>
+            <th># of Tickets</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr id="@item.Id">
+            <td>
+                @Html.DisplayFor(modelItem => item.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>            
+            <td>
+                @Html.DisplayFor(modelItem => item.Company.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProjectPriority.Name)
+            </td>
+            <td>
+                @item.Tickets.Count
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<script>
+    const actions = document.getElementById("actions")
+    actions.addEventListener('change', (e) => {
+        window.location = e.target.value
+    })
+</script>
+
+<script>
+    $(document).ready(() => {
+        let collection = document.getElementsByTagName("tr")
+        let rows = Array.from(collection);
+        rows.shift()
+
+        rows.forEach(row => {
+            row.addEventListener('click', e => {
+                window.location = `/Projects/Details/${row.id}`
+            })
+        })
+    })
+</script>

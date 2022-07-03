@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +26,9 @@ namespace TheBugTracker.Controllers
         private readonly IBTFileService _fileService;
         private readonly IBTProjectService _projectService;
         private readonly IBTCompanyInfoService _companyService;
+        private readonly UserManager<BTUser> _userManager;
 
-        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService, IBTFileService fileService, IBTProjectService projectService, IBTCompanyInfoService companyService)
+        public ProjectsController(ApplicationDbContext context, IBTRolesService rolesService, IBTLookupService lookupService, IBTFileService fileService, IBTProjectService projectService, IBTCompanyInfoService companyService, UserManager<BTUser> userManager)
         {
             _context = context;
             _rolesService = rolesService;
@@ -34,6 +36,7 @@ namespace TheBugTracker.Controllers
             _fileService = fileService;
             _projectService = projectService;
             _companyService = companyService;
+            _userManager = userManager;
         }
 
         [AllowAnonymous]
@@ -51,6 +54,29 @@ namespace TheBugTracker.Controllers
             return View(projects);
         }
         
+        public async Task<IActionResult> MyProjects()
+        {
+            string userId = _userManager.GetUserId(User);
+            List<Project> projects = await _projectService.GetUserProjectsAsync(userId);
+            return View(projects);
+        }
+        
+        public async Task<IActionResult> AllProjects()
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            if(User.IsInRole(nameof(Roles.Admin)) || User.IsInRole(nameof(Roles.ProjectManager))){
+                return View(await _companyService.GetAllProjectsAsync(companyId));
+            } else{
+                return View(await _projectService.GetAllProjectsByCompany(companyId));
+            }
+        }
+        
+        public async Task<IActionResult> ArchivedProjects()
+        {
+            int companyId = User.Identity.GetCompanyId().Value;
+            return View(await _projectService.GetArchivedProjectsByCompany(companyId));
+        }
+
         [AllowAnonymous]
         public async Task<IActionResult> AddTicketToProject(int projectId)
         {

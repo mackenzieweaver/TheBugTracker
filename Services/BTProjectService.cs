@@ -123,9 +123,22 @@ namespace TheBugTracker.Services
 
         public async Task<List<Project>> GetArchivedProjectsByCompany(int companyId)
         {
-            List<Project> projects = await GetAllProjectsByCompany(companyId);
-            IQueryable<Project> archived = projects.Where(p => p.Archived == true).AsQueryable();
-            return await archived.ToListAsync();
+            IQueryable<Project> query = _context.Projects
+                .Where(p => p.CompanyId == companyId && p.Archived == true)
+                .Include(p => p.Company)
+                .Include(p => p.ProjectPriority)
+                .Include(p => p.Members)
+                .Include(p => p.Tickets)
+                .Include(p => p.Tickets).ThenInclude(t => t.Comments)
+                .Include(p => p.Tickets).ThenInclude(t => t.Attachments)
+                .Include(p => p.Tickets).ThenInclude(t => t.History)
+                .Include(p => p.Tickets).ThenInclude(t => t.Notifications)
+                .Include(p => p.Tickets).ThenInclude(t => t.DeveloperUser)
+                .Include(p => p.Tickets).ThenInclude(t => t.OwnerUser)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketStatus)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketPriority)
+                .Include(p => p.Tickets).ThenInclude(t => t.TicketType);
+            return await query.ToListAsync();
         }
 
         public async Task<List<BTUser>> GetDevelopersOnProjectAsync(int projectId)
