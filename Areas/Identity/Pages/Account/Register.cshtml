@@ -40,6 +40,25 @@
                 <input asp-for="Input.ConfirmPassword" class="form-control" />
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
             </div>
+            
+            <div class="form-group mb-0">
+                <input type="radio" checked id="createNewCompany" name="creatingOrJoiningCompany" value="Create new company">
+                <label for="createNewCompany">Create new company</label>
+
+                <input type="radio" id="joinExistingCompany" name="creatingOrJoiningCompany" value="Join an existing company">
+                <label for="joinExistingCompany">Join an existing company</label>
+            </div>
+
+            <div id="companyName" class="form-group">
+                <label>Name your company</label>
+                <input asp-for="Input.CompanyName" class="form-control" />
+            </div>
+            
+            <div id="companyCode" class="form-group">
+                <label>Invite Code</label>
+                <input asp-for="Input.InviteCode" class="form-control" />
+            </div>
+
             <button type="submit" class="btn btn-primary">Register</button>
 
             <p class="mt-3">
@@ -52,4 +71,34 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const createNewCompany = document.getElementById('createNewCompany')
+        const joinExistingCompany = document.getElementById('joinExistingCompany')
+
+        const companyName = document.getElementById('companyName')
+        const companyCode = document.getElementById('companyCode')
+
+        if(createNewCompany.checked){
+            companyName.style.display = 'block';
+            companyCode.style.display = 'none';
+        } else {
+            companyName.style.display = 'none';
+            companyCode.style.display = 'block';
+        }
+
+        createNewCompany.addEventListener('click', () => {
+            companyName.style.display = 'block';
+            companyCode.style.display = 'none';
+            companyName.children[1].focus()
+        })
+        
+        joinExistingCompany.addEventListener('click', () => {
+            companyName.style.display = 'none';
+            companyCode.style.display = 'block';
+            companyCode.children[1].focus()
+        })
+
+
+    </script>
 }

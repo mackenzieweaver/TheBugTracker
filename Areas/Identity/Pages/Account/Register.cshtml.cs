@@ -12,8 +12,12 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Models.Enums;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Areas.Identity.Pages.Account
 {
@@ -24,17 +28,17 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
         private readonly UserManager<BTUser> _userManager;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
+        private readonly ApplicationDbContext _context;
+        private readonly IBTRolesService _rolesService;
 
-        public RegisterModel(
-            UserManager<BTUser> userManager,
-            SignInManager<BTUser> signInManager,
-            ILogger<RegisterModel> logger,
-            IEmailSender emailSender)
+        public RegisterModel(UserManager<BTUser> userManager, SignInManager<BTUser> signInManager, ILogger<RegisterModel> logger, IEmailSender emailSender, ApplicationDbContext context, IBTRolesService rolesService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
             _emailSender = emailSender;
+            _context = context;
+            _rolesService = rolesService;
         }
 
         [BindProperty]
@@ -69,6 +73,9 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
+
+            public string CompanyName { get; set; }
+            public Guid? InviteCode { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -83,8 +90,30 @@ namespace TheBugTracker.Areas.Identity.Pages.Account
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
             if (ModelState.IsValid)
             {
-                var user = new BTUser { UserName = Input.Email, Email = Input.Email, FirstName = Input.FirstName, LastName = Input.LastName };
+                int companyId = 0;
+                string role = "";
+                if(Input.CompanyName is not null){
+                    // create new company
+                    Company c = new () { Name = Input.CompanyName };
+                    await _context.Companies.AddAsync(c);
+                    await _context.SaveChangesAsync();
+                    companyId = c.Id;
+                    role = Roles.Admin.ToString();
+                }
+                if(Input.InviteCode is not null){
+                    // join existing company
+                    var invite = await _context.Invites.FirstOrDefaultAsync(x => x.CompanyToken == Input.InviteCode);
+                    companyId = invite.CompanyId;
+                    role = Roles.Developer.ToString();
+                }
+
+                var user = new BTUser { 
+                    UserName = Input.Email, Email = Input.Email, 
+                    FirstName = Input.FirstName, LastName = Input.LastName,
+                    CompanyId = companyId };
                 var result = await _userManager.CreateAsync(user, Input.Password);
+                await _rolesService.AddUserToRoleAsync(user, role);
+
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");

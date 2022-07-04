@@ -15,7 +15,7 @@ namespace TheBugTracker.Models
         public string Name { get; set; }
 
         [DisplayName("Company Description")]
-        public string Description { get; set; }        
+        public string Description { get; set; }
 
         // Navigation Properties
         public virtual ICollection<BTUser> Members { get; set; } = new HashSet<BTUser>();
