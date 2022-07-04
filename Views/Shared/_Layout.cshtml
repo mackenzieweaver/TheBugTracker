@@ -7,7 +7,7 @@
 
 @{
     var user = await _userManager.GetUserAsync(User);
-    List<BTUser> users;
+    List<BTUser> users = new();
     if (_signInManager.IsSignedIn(User))
     {
         users = await _context.Users.Where(x => x.CompanyId == user.CompanyId).ToListAsync();
@@ -59,6 +59,7 @@
                     @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
                     @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
                     @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
+                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Invites"asp-action="Index">Invites</a></li> }
                     @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
                     @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
                 </ul>

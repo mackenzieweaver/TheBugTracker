@@ -21,7 +21,7 @@ namespace TheBugTracker.Models
         public int CompanyId { get; set; }
         
         [DisplayName("Project")]
-        public int ProjectId { get; set; }
+        public int? ProjectId { get; set; }
         
         [DisplayName("Invitor")]
         public string InvitorId { get; set; }

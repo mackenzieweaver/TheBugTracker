@@ -4,13 +4,17 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using PasswordGenerator;
 using TheBugTracker.Data;
 using TheBugTracker.Models;
+using TheBugTracker.Models.Enums;
 using TheBugTracker.Services;
+using TheBugTracker.Services.Interfaces;
 
 namespace TheBugTracker.Controllers
 {
@@ -19,11 +23,17 @@ namespace TheBugTracker.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailSender _emailService;
+        private readonly UserManager<BTUser> _userManager;
+        private readonly IBTRolesService _rolesService;
+        private readonly SignInManager<BTUser> _signInManager;
 
-        public InvitesController(ApplicationDbContext context, IEmailSender emailService)
+        public InvitesController(ApplicationDbContext context, IEmailSender emailService, UserManager<BTUser> userManager, IBTRolesService rolesService, SignInManager<BTUser> signInManager)
         {
             _emailService = emailService;
             _context = context;
+            _userManager = userManager;
+            _rolesService = rolesService;
+            _signInManager = signInManager;
         }
 
         [AllowAnonymous]
@@ -58,21 +68,50 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> Create()
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == User.Identity.Name);
-            if (user.CompanyId == null) return RedirectToAction("Index", "Users");
             ViewData["CompanyId"] = user.CompanyId;
-            ViewData["ProjectId"] = new SelectList(_context.Projects
-                .Where(x => x.CompanyId == user.CompanyId), "Id", "Name");
+            ViewData["ProjectId"] = new SelectList(_context.Projects.Where(x => x.CompanyId == user.CompanyId), "Id", "Name");
             return View();
         }
         
-        public async Task<IActionResult> Accept(int inviteId)
+        [AllowAnonymous]
+        public async Task<IActionResult> Accept(int id)
         {
-            // if user is signed in then sign them out
+            Invite i = await _context.Invites
+                .Include(x => x.Invitor)
+                .Include(x => x.Company)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if(i is null) return NotFound();
 
-            // have newly accepted user register
-             
-            // once registered, automatically joins company   
-        
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == i.InviteeEmail);
+            var pw = new Password();
+            string password = pw.Next();
+            
+            if(user is null){
+                user = new BTUser {                  
+                    UserName = i.InviteeEmail,
+                    FirstName = i.InviteeFirstName,
+                    LastName = i.InviteeLastName,
+                    Email = i.InviteeEmail,
+                    CompanyId = i.CompanyId
+                };
+                var result = await _userManager.CreateAsync(user, password);
+                await _rolesService.AddUserToRoleAsync(user, Roles.Developer.ToString());
+            }
+
+            if(_signInManager.IsSignedIn(User)){
+                await _signInManager.SignOutAsync();
+            }
+            await _signInManager.SignInAsync(user, isPersistent: false);
+
+            ViewData["invitor"] = i.Invitor.FullName;
+            ViewData["username"] = user.Email;
+            ViewData["password"] = password;
+            ViewData["company"] = i.Company.Name;
+            return View();
+        }
+       
+        public IActionResult Sent()
+        {
             return View();
         }
 
@@ -80,17 +119,24 @@ namespace TheBugTracker.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Invite invite)
         {
-            var company = await _context.Companies.FirstOrDefaultAsync(x => x.Id == invite.CompanyId);
-            var callbackUrl = $"{Request.Scheme}://{Request.Host}/Invites/Accept";
-            await _emailService.SendEmailAsync(
-                invite.InviteeEmail, 
-                $"Invitation to Join {company.Name}",
-                $"<a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Accept</a>."
-            );
-            
-            _context.Add(invite);
+            invite.CompanyToken = Guid.NewGuid();
+            await _context.AddAsync(invite);
             await _context.SaveChangesAsync();
-            return RedirectToAction("Index", "Users");
+
+            var company = await _context.Companies.FindAsync(invite.CompanyId);
+            var username = User.Identity.Name;
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.UserName == username);
+            var callbackUrl = $"{Request.Scheme}://{Request.Host}/Invites/Accept?id={invite.Id}";
+            var registerUrl = $"{Request.Scheme}://{Request.Host}/Identity/Account/Register";
+            
+            var subject = "Invitation to The Bug Tracker";
+            var body = $"{user.FullName} has invited you to join their company {company.Name}.<br>";
+            body += $"<a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Click here to accept and join</a>.<br><br>";
+
+            body += $"Optionally you can go <a href='{HtmlEncoder.Default.Encode(registerUrl)}'>here</a> to register your account and use this code to join the company.<br>";
+            body += $"Your code: {invite.CompanyToken}";
+            await _emailService.SendEmailAsync( invite.InviteeEmail, subject, body );
+            return RedirectToAction("Sent");
         }
 
         public async Task<IActionResult> Edit(int? id)
