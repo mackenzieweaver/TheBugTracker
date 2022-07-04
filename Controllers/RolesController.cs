@@ -7,7 +7,6 @@ using TheBugTracker.Data;
 
 namespace TheBugTracker.Controllers
 {
-    [Authorize]
     public class RolesController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -23,6 +22,7 @@ namespace TheBugTracker.Controllers
             return View(roles);
         }
         
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Add(string role)
@@ -37,6 +37,7 @@ namespace TheBugTracker.Controllers
             return RedirectToAction(nameof(Index));
         }
         
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(string id)

@@ -9,10 +9,10 @@ using TheBugTracker.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace TheBugTracker.Controllers
 {
-    [Authorize]
     public class UserRolesController : Controller
     {
         private readonly IBTRolesService _rolesService;
@@ -29,8 +29,13 @@ namespace TheBugTracker.Controllers
         public async Task<IActionResult> Manage()
         {
             List<ManageUserRolesViewModel> model = new();
-            int companyId = User.Identity.GetCompanyId().Value;
-            List<BTUser> users = await _companyInfoService.GetAllMembersAsync(companyId);
+            int? companyId = User.Identity.GetCompanyId();
+            List<BTUser> users = new();
+            if(companyId is not null){
+                users = await _companyInfoService.GetAllMembersAsync(companyId.Value);
+            }else{
+                users = await _context.Users.ToListAsync();
+            }
             var roles = await _rolesService.GetRolesAsync();
             foreach (var user in users)
             {
@@ -44,6 +49,7 @@ namespace TheBugTracker.Controllers
             return View(model);
         }
 
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Manage(string userId, List<string> selectedRoles)
