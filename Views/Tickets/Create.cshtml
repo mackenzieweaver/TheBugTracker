@@ -18,7 +18,7 @@
     <div class="col-sm-8">
         <h1>New Ticket</h1>
         <hr />
-        <form asp-action="Create" class="border p-5">
+        <form asp-action="Create" class="border p-xl-5 p-3">
             <input type="hidden" asp-for="OwnerUserId" value="@user.Id" />
             <input type="hidden" asp-for="Created" value="@DateTime.Now" />
             <input type="hidden" asp-for="TicketStatusId" value="@ViewBag.TicketStatusId" />
@@ -27,7 +27,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="Title" class="control-label"></label>
                 </div>
                 <div class="col">
@@ -38,7 +38,7 @@
             <br>
 
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="Description" class="control-label"></label>
                 </div>
                 <div class="col">
@@ -49,10 +49,10 @@
             <br>   
 
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="ProjectId" class="control-label"></label>
                 </div>
-                <div class="col-4">
+                <div class="col">
                     <select asp-for="ProjectId" class ="form-control" asp-items="ViewBag.ProjectId"></select>
                     <span asp-validation-for="ProjectId" class="text-danger"></span>
                 </div>
@@ -60,10 +60,10 @@
             <br>
 
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="TicketTypeId" class="control-label"></label>
                 </div>
-                <div class="col-4">
+                <div class="col">
                     <select asp-for="TicketTypeId" class ="form-control" asp-items="ViewBag.TicketTypeId"></select>
                     <span asp-validation-for="TicketTypeId" class="text-danger"></span>
                 </div>
@@ -71,10 +71,10 @@
             <br>         
             
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="TicketPriorityId" class="control-label"></label>
                 </div>
-                <div class="col-4">
+                <div class="col">
                     <select asp-for="TicketPriorityId" class ="form-control" asp-items="ViewBag.TicketPriorityId"></select>
                     <span asp-validation-for="TicketPriorityId" class="text-danger"></span>
                 </div>
@@ -82,10 +82,10 @@
             <br>
             
             <div class="row">
-                <div class="col-2">
+                <div class="col-xl-2">
                     <label asp-for="DeveloperUserId" class="control-label"></label>
                 </div>
-                <div class="col-4">
+                <div class="col">
                     <select asp-for="DeveloperUserId" class ="form-control" asp-items="ViewBag.DeveloperUserId"></select>
                     <span asp-validation-for="DeveloperUserId" class="text-danger"></span>
                 </div>
@@ -93,7 +93,7 @@
             <br>
 
             <div class="row justify-content-end">
-                <div class="col-10">
+                <div class="col">
                     <input type="submit" value="Submit" class="btn btn-primary" />
                 </div>
             </div>

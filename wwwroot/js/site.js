@@ -1,4 +1,7 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
+﻿function mobilenav() {
+    const main = document.getElementsByTagName('main')[0]
+    main.classList.contains('d-none') ? main.classList.remove('d-none') : main.classList.add('d-none')
+    
+    const mobileNavLinks = document.getElementById('mobileNavLinks')
+    mobileNavLinks.classList.contains('d-none') ? mobileNavLinks.classList.remove('d-none') : mobileNavLinks.classList.add('d-none')
+}
