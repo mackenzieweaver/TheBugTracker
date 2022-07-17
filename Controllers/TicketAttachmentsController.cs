@@ -65,7 +65,7 @@ namespace TheBugTracker.Controllers
             var ticketAttachment = await _context.TicketAttachments.FindAsync(id);
             _context.TicketAttachments.Remove(ticketAttachment);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details", "Tickets", new{ id = ticketAttachment.TicketId });
         }
 
         private bool TicketAttachmentExists(int id)

@@ -75,6 +75,10 @@
             {
                 <a href=@fileService.ConvertByteArrayToFile(attachment.FileData, extension) target="_blank" download=@attachment.FileName>@attachment.FileName</a>
             }
+            @if(User.Identity.IsAuthenticated)
+            {
+                <a asp-controller="TicketAttachments" asp-action="Delete" asp-route-id="@attachment.Id" class="btn btn-sm btn-danger">&#10005;</a>
+            }
             <br>
         }
 
