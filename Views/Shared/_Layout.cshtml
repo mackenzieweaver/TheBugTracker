@@ -30,6 +30,7 @@
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/toast.css" />
     <link rel="stylesheet" href="~/css/notification.css" />
+    <link rel="stylesheet" href="//cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" />
     <style>
         .customcontainer {
             max-height: 100vh;
@@ -106,7 +107,11 @@
         </ul>
     </div>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> 
+    <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script> 
+    <script>        
+        $(document).ready(() => $('table.table').DataTable())
+    </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
     <script src="~/js/notifications.js"></script>
