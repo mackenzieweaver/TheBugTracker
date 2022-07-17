@@ -43,42 +43,37 @@
 </head>
 
 <body class="row m-0">
-
-    <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer">
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-right box-shadow p-0">
-            <button class="navbar-toggler m-3" type="button" data-toggle="collapse" data-target=".navbar-collapse"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1 flex-sm-column p-3" style="min-height: 100vh">
-                    <li class="nav-item"><partial name="_LoginPartial" /></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
-                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li> }
-                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
-                    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
-                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
-                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
-                    @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
-                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Invites"asp-action="Index">Invites</a></li> }
-                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
-                    @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
-                </ul>
-            </div>
-        </nav>
+    <div class="col-auto p-0 customcontainer d-none d-xl-block border-right">
+        <ul class="navbar-nav p-3" style="min-height: 100vh">
+            <li class="nav-item"><partial name="_LoginPartial" /></li>
+            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a></li>
+            @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a></li> }
+            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Projects" asp-action="Index">Projects</a></li>
+            <li class="nav-item"><a class="nav-link text-dark" asp-controller="Tickets" asp-action="Index">Tickets</a></li>
+            @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Chat"asp-action="Anonymous">Chat</a></li> }
+            @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
+            @if (!_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
+            @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Invites"asp-action="Index">Invites</a></li> }
+            @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="Roles"asp-action="Index">Roles</a></li> }
+            @if (_signInManager.IsSignedIn(User)) { <li class="nav-item"><a class="nav-link text-dark" asp-controller="UserRoles"asp-action="Manage">User Roles</a></li> }
+        </ul>
     </div>
 
     <div class="col p-3 customcontainer">
+        <div class="d-block d-xl-none">
+            nav
+            <hr />
+        </div>
         @RenderBody()
         <div id="toast-container"></div>
     </div>
 
-    <div class="col-12 col-sm-4 col-lg-3 col-xl-auto p-0 customcontainer border-left">
-        <div class="sticky-top bg-white px-3 pt-3">
+    <div class="col-auto p-3 customcontainer d-none d-xl-block border-left">
+        <div class="sticky-top bg-white">
             <h2>Teammates</h2>
             <hr />
         </div>
-        <ul class="navbar-nav px-3 pb-3">
+        <ul class="navbar-nav">
             @foreach (var u in users)
             {
                 <li class="my-1">
@@ -110,7 +105,7 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script> 
     <script src="//cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script> 
     <script>        
-        $(document).ready(() => $('table.table').DataTable())
+        $(document).ready(() => $('table.table').DataTable({ responsive: true }))
     </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/signalr/dist/browser/signalr.js"></script>
