@@ -91,7 +91,18 @@ namespace TheBugTracker.Controllers
             var ticketComment = await _context.TicketComments.FindAsync(id);
             _context.TicketComments.Remove(ticketComment);
             await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
+        }
+        
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditComment(int id, string comment)
+        {
+            var ticketComment = await _context.TicketComments.FindAsync(id);
+            ticketComment.Comment = comment;
+            _context.TicketComments.Update(ticketComment);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Details", "Tickets", new { id = ticketComment.TicketId });
         }
 
         private bool TicketCommentExists(int id)

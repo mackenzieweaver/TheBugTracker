@@ -98,17 +98,52 @@
                 </div>
             </form>
         }
-        
-        @foreach (var comment in Model.Comments.OrderByDescending(x => x.Created))
-        {
-            <p style="font-size: 12px;" class="mb-0">
-                <a asp-controller="Users" asp-action="Profile" asp-route-id="@comment.UserId" class="text-dark text-decoration-underline">
-                    <strong>@comment.User.FullName</strong> 
-                </a>
-                <span style="color: #606060">@comment.Created.ToString("d") @comment.Created.ToString("t")</span>
-            </p>
-            <p style="font-size: 14px;">@comment.Comment</p>
-        }
+        <div id="comments">
+            @foreach (var comment in Model.Comments.OrderByDescending(x => x.Created))
+            {
+                <p style="font-size: 12px;" class="mb-0">
+                    <a asp-controller="Users" asp-action="Profile" asp-route-id="@comment.UserId" class="text-dark text-decoration-underline">
+                        <strong>@comment.User.FullName</strong> 
+                    </a>
+                    <span style="color: #606060">@comment.Created.ToString("d") @comment.Created.ToString("t")</span>
+                </p>
+                <p style="font-size: 14px;" class="mb-0">@comment.Comment</p>
+                @if(comment.UserId == user.Id)
+                {
+                    <form method="post" asp-controller="TicketComments" asp-action="EditComment" asp-route-id="@comment.Id" class="d-none">
+                        <input height="32" type="text" name="comment" value="@comment.Comment" class="w-100" />
+                        <input type="hidden" name="id" value="@comment.Id" />
+                        <input type="submit" value="Save" class="btn btn-primary" />
+                        <button class="btn btn-outline-primary">Cancel</button>
+                    </form>
+                    <button onclick="editcomment(this)" class="p-0" style="font-size: 12px; color: #606060; border: none; background-color: transparent; text-decoration: underline;">
+                        Edit
+                    </button>                    
+                    <a asp-controller="TicketComments" asp-action="Delete" asp-route-id="@comment.Id"
+                        style="font-size: 12px; color: #606060; border: none; background-color: transparent; text-decoration: underline;">
+                        Delete
+                    </a>
+                    <script>
+                        function editcomment(el){
+                            el.classList.add('d-none')
+                            el.nextSibling.nextSibling.classList.add('d-none')
+                            
+                            const form = el.previousSibling.previousSibling
+                            const comment = form.previousSibling.previousSibling
+                            form.classList.remove('d-none')
+                            comment.classList.add('d-none')
+
+                            const input = form.children[0]
+                            const end = input.value.length
+                            input.setSelectionRange(end, end)
+                            input.focus()
+                        }
+                    </script>
+                    <br/>
+                }
+                <br/>
+            }
+        </div>
     </div>
 
     @* Status, Priority, Type, Developer ... *@
